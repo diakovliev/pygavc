@@ -53,7 +53,7 @@ class Query:
         if not self.__version:
             return ret
 
-        ret = ":%s" % self.__version
+        ret += ":%s" % self.__version
 
         if self.__classifiers:
             sepa = ":"
