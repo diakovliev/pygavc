@@ -22,11 +22,11 @@ class Metadata:
     def parse(input_string):
         doc = utils.XmlUtils.parse(input_string)
         self = Metadata()
-        self.__groupId      = utils.XmlUtils.get_by_path(doc.documentElement, "/groupId")
-        self.__artifactId   = utils.XmlUtils.get_by_path(doc.documentElement, "/artifactId")
-        self.__version      = utils.XmlUtils.get_by_path(doc.documentElement, "/version")
+        self.__groupId      = utils.XmlUtils.get_value_by_path(doc.documentElement, "/groupId")
+        self.__artifactId   = utils.XmlUtils.get_value_by_path(doc.documentElement, "/artifactId")
+        self.__version      = utils.XmlUtils.get_value_by_path(doc.documentElement, "/version")
 
-        versioning          = utils.XmlUtils.get_by_path(doc.documentElement, "/versioning", None, True)
+        versioning          = utils.XmlUtils.get_item_by_path(doc.documentElement, "/versioning")
         self.__versioning   = metadata_versioning.MetadataVersioning.from_element(versioning)
 
         return self
