@@ -1,5 +1,3 @@
-import copy
-
 from xml.dom import minidom
 
 ################################################################################
@@ -46,39 +44,43 @@ class XmlUtils:
             return default
 
     @staticmethod
-    def get_by_path(xml_element, in_path, default = None, no_extract_values = False):
+    def get_item_by_path(xml_element, in_path, default = None):
+        path_parts  = list(filter(lambda x: x, in_path.split(XmlUtils.PATH_SEPA)))
 
+        curr        = xml_element
+        curr_path   = ''
+
+        while path_parts:
+            tag = path_parts.pop(0)
+            curr_path += tag
+
+            children = curr.getElementsByTagName(tag)
+
+            if not children:
+                return default
+
+            curr_path += XmlUtils.PATH_SEPA
+            curr = children[0]
+
+        return curr
+
+    @staticmethod
+    def get_value_by_path(xml_element, in_path, default = None):
         if XmlUtils.ATTR_SEPA in in_path:
             path, attr  = in_path.split(XmlUtils.ATTR_SEPA, 1)
         else:
             path = in_path
             attr = None
 
-        path_parts  = list(filter(lambda x: x, path.split(XmlUtils.PATH_SEPA)))
+        item = XmlUtils.get_item_by_path(xml_element, path, default)
+        if not item:
+            return default
 
-        queue       = copy.copy(path_parts)
+        ret = default
 
-        curr        = xml_element
-        curr_path   = ''
-
-        while queue:
-            tag = queue.pop(0)
-            curr_path += tag
-
-            childs = curr.getElementsByTagName(tag)
-
-            if not childs:
-                return default
-
-            curr_path += XmlUtils.PATH_SEPA
-            curr = childs[0]
-
-        ret = curr
-
-        if not no_extract_values:
-            if not attr and curr.firstChild and curr.firstChild.wholeText:
-                ret = curr.firstChild.wholeText
-            elif attr:
-                ret = XmlUtils.get_attr_value(curr, attr, default)
+        if not attr and item.firstChild and item.firstChild.wholeText:
+            ret = item.firstChild.wholeText
+        elif attr:
+            ret = XmlUtils.get_attr_value(item, attr, default)
 
         return ret
