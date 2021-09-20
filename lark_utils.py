@@ -15,17 +15,17 @@ class TreeHelper:
 
     def __subtree_by_name(self, name):
         for element in self.__tree.children:
-            if name == element.data: return element
+            if name == element.data: return TreeHelper(element)
         return None
 
     def tree_by_path(self, path):
         pelems = path.split("/")
         current_tree = self
         for pelem in pelems:
-            current_tree = self.__subtree_by_name(pelem)
+            current_tree = current_tree.__subtree_by_name(pelem)
             if not current_tree:
                 return None
-        return TreeHelper(current_tree)
+        return current_tree
 
     def first_value(self, default_value = None):
         if len(self) == 0:
