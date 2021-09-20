@@ -9,10 +9,10 @@ class Query:
         group: /[0-9a-zA-Z\.\-\_]+/
         name: /[0-9a-zA-Z\_]+/
         version:  /[0-9a-zA-Z\.\-\_\*\+\[\]\(\)\,]+/
-        ce: classifier ( "@" extenstion)? ","?
+        ce: classifier ( "@" extension)? ","?
         cel: ce+
         classifier: /[0-9a-zA-Z\.\-\_]+/
-        extenstion: /[0-9a-zA-Z\_]+/
+        extension: /[0-9a-zA-Z\_]+/
     """
 
     def __init__(self, group = None, name = None, version = None, classifiers = []):
@@ -39,12 +39,12 @@ class Query:
 
         for ce in tree.tree_by_path("cel").children():
             classifier = ce.tree_by_path("classifier").first_value()
-            ext_tree = ce.tree_by_path("extenstion")
+            ext_tree = ce.tree_by_path("extension")
             if ext_tree:
-                extenstion = ext_tree.first_value()
+                extension = ext_tree.first_value()
             else:
-                extenstion = None
-            self.__classifiers.append((classifier, extenstion))
+                extension = None
+            self.__classifiers.append((classifier, extension))
 
         return self
 
