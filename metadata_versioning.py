@@ -1,4 +1,4 @@
-import utils
+from xml_utils import XmlUtils
 
 class MetadataVersioning:
     def __init__(self):
@@ -17,9 +17,9 @@ class MetadataVersioning:
     @staticmethod
     def from_element(element):
         self = MetadataVersioning()
-        self.__latest       = utils.XmlUtils.get_value_by_path(element, "/latest")
-        self.__release      = utils.XmlUtils.get_value_by_path(element, "/release")
-        self.__lastUpdated  = utils.XmlUtils.get_value_by_path(element, "/lastUpdated")
+        self.__latest       = XmlUtils.get_value_by_path(element, "/latest")
+        self.__release      = XmlUtils.get_value_by_path(element, "/release")
+        self.__lastUpdated  = XmlUtils.get_value_by_path(element, "/lastUpdated")
         elements = element.getElementsByTagName("version")
         for element in elements:
             self.__versions.append(element.firstChild.wholeText)
