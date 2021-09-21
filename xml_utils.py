@@ -26,7 +26,11 @@ class XmlUtils:
 
     @staticmethod
     def get_first_item_whole_text(xml_element, tag_name, default = None):
-        firstChild = XmlUtils.get_first_item(xml_element, tag_name).firstChild
+        item = XmlUtils.get_first_item(xml_element, tag_name)
+        if not item:
+            return default
+
+        firstChild = item.firstChild
         if firstChild and firstChild.wholeText:
             return firstChild.wholeText
         else:
@@ -35,6 +39,9 @@ class XmlUtils:
     @staticmethod
     def get_attr_value(xml_element, attr_name, default = None):
         if not xml_element:
+            return default
+
+        if attr_name not in xml_element.attributes:
             return default
 
         attr = xml_element.attributes[attr_name]
@@ -72,7 +79,7 @@ class XmlUtils:
             path = in_path
             attr = None
 
-        item = XmlUtils.get_item_by_path(xml_element, path, default)
+        item = XmlUtils.get_item_by_path(xml_element, path)
         if not item:
             return default
 
