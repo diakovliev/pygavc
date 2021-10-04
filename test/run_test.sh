@@ -5,3 +5,4 @@ PARENT_DIR="$(dirname $SCRIPT_DIR)"
 
 export PYTHONPATH="$PYTHONPATH:$SCRIPT_DIR:$PARENT_DIR"
 python -m utils_test -v
+python -m version_test -v
