@@ -1,4 +1,5 @@
 import re
+import lark
 
 from lark import Lark
 from lark import Transformer
@@ -8,6 +9,7 @@ class Op:
     OP_ALL     = "*"
     OP_OLDEST  = "-"
     OP_LATEST  = "+"
+    OP_DEL     = "."
 
     def __init__(self, op, data):
         self.__op   = op
@@ -26,9 +28,21 @@ class Version:
 
     def __str__(self):
         ret = ""
+        delimiter = ""
         for op in self.__ops:
+            ret += delimiter
             ret += op.data()
+            delimiter = Op.OP_DEL
         return ret
+
+    def ops(self):
+        return self.__ops
+
+    def is_const(self):
+        for op in self.__ops:
+            if op.op() != Op.OP_CONST:
+                return False
+        return True
 
 class Range:
     EXCLUDE_ALL     = 0x00
@@ -67,9 +81,10 @@ class VersionData:
         op_all: "*"
         op_oldest: "-"
         op_latest: "+"
-        op_const: /[0-9a-zA-Z\.\_]+/
+        op_const: /[0-9a-zA-Z\_]+/
+        op_del: "."
         ops: op_const | op_oldest | op_latest | op_all
-        version: ops+
+        version: ops (op_del ops)*
         version_range: left_bracket version "," version right_bracket
     """
 
@@ -83,10 +98,19 @@ class VersionData:
             ret += str(self.__range)
         return ret
 
+    def version(self):
+        return self.__version
+
+    def range(self):
+        return self.__range
+
     @staticmethod
     def parse(input_string):
-        tree = Lark(VersionData.GRAMMAR, parser='lalr').parse(input_string)
-        return _VersionDataTransformer().transform(tree)
+        try:
+            tree = Lark(VersionData.GRAMMAR, parser='lalr').parse(input_string)
+            return _VersionDataTransformer().transform(tree)
+        except lark.exceptions.UnexpectedToken:
+            return None
 
 class _VersionDataTransformer(Transformer):
     def start(self, items):
@@ -94,7 +118,11 @@ class _VersionDataTransformer(Transformer):
             return VersionData(items[0], items[1])
         return VersionData(items[0])
 
-    def version(self, ops):
+    def version(self, items):
+        ops = list()
+        for item in items:
+            if type(item) == Op:
+                ops.append(item)
         return Version(ops)
 
     def ops(self, op):
@@ -106,6 +134,7 @@ class _VersionDataTransformer(Transformer):
     op_all = lambda self, _: Op(Op.OP_ALL, "*")
     op_oldest = lambda self, _: Op(Op.OP_OLDEST, "-")
     op_latest = lambda self, _: Op(Op.OP_LATEST, "+")
+    op_del = lambda self, _: "."
 
     def version_range(self, items):
         left_bracket, left_version, right_version, right_bracket = items
@@ -124,7 +153,8 @@ class _VersionDataTransformer(Transformer):
 
 
 if __name__ == "__main__":
-    print(VersionData.parse("16.6.+"))
+    print(VersionData.parse(""))
+    print(VersionData.parse("16.6.++"))
     print(VersionData.parse("12.*.*(12.1.-,12.5.+]"))
     print(VersionData.parse("16.6.*[16.6.123,16.6.533)"))
 
