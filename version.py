@@ -44,6 +44,11 @@ class Version:
                 return False
         return True
 
+    def is_single_version(self):
+        if not len(self.__ops):
+            return False
+        return self.__ops[-1] != Op.OP_ALL
+
 class Range:
     EXCLUDE_ALL     = 0x00
     INCLUDE_LEFT    = 0x01
