@@ -3,7 +3,6 @@ import requests
 
 import query
 
-import utils
 import metadata
 
 
@@ -68,15 +67,17 @@ class Connection:
 
 
 def main():
-    q = query.Query.parse("entone.sdk.release:mipsel_linux:*:oemsdk_release@zip,oemsdk_debug@zip")
-
     token = os.environ["GAVC_SERVER_API_ACCESS_TOKEN"]
     url = os.environ["GAVC_SERVER_URL"]
     repo = os.environ["GAVC_SERVER_REPOSITORY"]
 
     c = Connection(url, repo, token)
+
+    q = query.Query.parse("entone.sdk.release:mipsel_linux:*[20,22]:oemsdk_release@zip,oemsdk_debug@zip")
     c.perform(q)
 
+    q = query.Query.parse("charter.worldbox11.oemsdk.release:humaxwb11:15.4.+")
+    c.perform(q)
 
 if __name__ == "__main__":
     main()

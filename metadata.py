@@ -1,4 +1,5 @@
 from xml_utils import XmlUtils
+from versions_filter import VersionsFilter
 
 import metadata_versioning
 
@@ -33,5 +34,5 @@ class Metadata:
 
 
     def versions_for(self, query):
-        # TODO:
-        return self.__versioning.versions()
+        vfilter = VersionsFilter(query.version())
+        return vfilter.filtered(self.__versioning.versions())

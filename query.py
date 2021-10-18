@@ -1,6 +1,7 @@
 import lark
 import simple_query
 import lark_utils
+import version
 
 
 class Query:
@@ -15,7 +16,7 @@ class Query:
         extension: /[0-9a-zA-Z\_]+/
     """
 
-    def __init__(self, group = None, name = None, version = None, classifiers = []):
+    def __init__(self, group = None, name = None, version = None, classifiers = None):
         self.__group        = group
         self.__name         = name
         self.__version      = version
@@ -32,11 +33,12 @@ class Query:
         if len(tree) < 3:
             return self
 
-        self.__version = tree.tree_by_path("version").first_value()
+        self.__version = version.VersionData.parse(tree.tree_by_path("version").first_value())
 
         if len(tree) < 4:
             return self
 
+        self.__classifiers = list()
         for ce in tree.tree_by_path("cel").children():
             classifier = ce.tree_by_path("classifier").first_value()
             ext_tree = ce.tree_by_path("extension")
@@ -53,7 +55,7 @@ class Query:
         if not self.__version:
             return ret
 
-        ret += ":%s" % self.__version
+        ret += ":%s" % str(self.__version)
 
         if self.__classifiers:
             sepa = ":"
@@ -73,12 +75,15 @@ class Query:
     def metadata_path(self):
         return "%s/%s/%s" % (self.__group_path(), self.__name, "maven-metadata.xml")
 
+    def version(self):
+        return self.__version
+
     def _aql_path(self):
         return "%s/%s/*" % (self.__group_path(), self.__name )
 
     def simple_queries_for(self, repo, version):
         if not self.__classifiers:
-            return ( simple_query.SimpleQuery(self, repo, self.__group, self.__name, version) )
+            return ( simple_query.SimpleQuery(self, repo, self.__group, self.__name, version), )
         else:
             return ( simple_query.SimpleQuery(self, repo, self.__group, self.__name, version, classifier[0], classifier[1]) for classifier in self.__classifiers )
 
