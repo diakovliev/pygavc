@@ -11,12 +11,13 @@ from sparts_table_comparator import SpartsTableComparator
 
 class VersionsFilter:
 
-    def __init__(self, version):
-        self.__version = version
-        self.__matcher = VersionsMatcher(version)
-        self.__comparator = VersionsComparator(version)
+    def __init__(self, version_data):
+        self.__version = version_data.version()
+        self.__range = version_data.range()
+        self.__matcher = VersionsMatcher(self.__version)
+        self.__comparator = VersionsComparator(self.__version)
 
-    def filtered(self, versions):
+    def __filtered(self, versions):
         result = versions.copy()
 
         # 1. Filter out all non matched versions.
@@ -50,20 +51,6 @@ class VersionsFilter:
 
         return result
 
-    def filtered_out(self, versions):
-        filtered = self.filtered(versions)
-        filtered_out = [version for version in versions if version not in filtered]
-        return filtered_out
-
-
-class VersionsRangeFilter:
-
-    def __init__(self, version_data):
-        self.__version = version_data.version()
-        self.__range = version_data.range()
-        self.__matcher = VersionsMatcher(self.__version)
-        self.__comparator = VersionsComparator(self.__version)
-
     def __get_border_version(self, version_template, versions):
         exists = True
         result = None
@@ -72,14 +59,14 @@ class VersionsRangeFilter:
             exists = str(version_template) in versions
             result = str(version_template)
         elif version_template.is_single_version():
-            border_filter = VersionsFilter(version_template)
+            border_filter = VersionsFilter(VersionData(version_template))
             filtered = border_filter.filtered(versions)
             if len(filtered):
                 result = filtered[0]
 
         return (result, exists)
 
-    def filtered(self, versions):
+    def __filtered_range(self, versions):
         result = list()
 
         if (not self.__version) or (not self.__range):
@@ -115,21 +102,19 @@ class VersionsRangeFilter:
 
         return result
 
+    def filtered(self, versions):
+        if self.__range:
+            return self.__filtered_range(versions)
+        return self.__filtered(versions)
+
     def filtered_out(self, versions):
         filtered = self.filtered(versions)
         filtered_out = [version for version in versions if version not in filtered]
         return filtered_out
 
 def __filter_versions(base_version_str, versions):
-    base_version = VersionData.parse(base_version_str).version()
-    vfilter = VersionsFilter(base_version)
-    filtered = vfilter.filtered(versions)
-    print("Base version: '" + str(base_version) +"'")
-    print(filtered)
-
-def __filter_range_versions(base_version_str, versions):
     base_version = VersionData.parse(base_version_str)
-    vfilter = VersionsRangeFilter(base_version)
+    vfilter = VersionsFilter(base_version)
     filtered = vfilter.filtered(versions)
     print("Base version: '" + str(base_version) +"'")
     print(filtered)
@@ -144,8 +129,8 @@ if __name__ == "__main__":
 
     print("\n")
 
-    __filter_range_versions("16.6.*[16.6.2,16.6.12]",  versions)
-    __filter_range_versions("16.6.*(16.6.2,16.6.12]",  versions)
-    __filter_range_versions("16.6.*[16.6.2,16.6.12)",  versions)
-    __filter_range_versions("16.6.*(16.6.2,16.6.12)",  versions)
+    __filter_versions("16.6.*[16.6.2,16.6.12]",  versions)
+    __filter_versions("16.6.*(16.6.2,16.6.12]",  versions)
+    __filter_versions("16.6.*[16.6.2,16.6.12)",  versions)
+    __filter_versions("16.6.*(16.6.2,16.6.12)",  versions)
 

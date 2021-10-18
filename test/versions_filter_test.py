@@ -1,7 +1,6 @@
 import unittest
 
 from versions_filter import VersionsFilter
-from versions_filter import VersionsRangeFilter
 from version import VersionData
 
 class VersionsFilterTests(unittest.TestCase):
@@ -25,7 +24,7 @@ class VersionsFilterTests(unittest.TestCase):
 
     def test_basic_filtering(self):
         version_data = VersionData.parse("16.6.*")
-        vfilter = VersionsFilter(version_data.version())
+        vfilter = VersionsFilter(version_data)
 
         filtered = vfilter.filtered(self.versions_test_data_1)
 
@@ -42,7 +41,7 @@ class VersionsFilterTests(unittest.TestCase):
 
     def test_basic_filter_all(self):
         version_data = VersionData.parse("*")
-        vfilter = VersionsFilter(version_data.version())
+        vfilter = VersionsFilter(version_data)
 
         filtered = vfilter.filtered(self.versions_test_data_1)
 
@@ -59,7 +58,7 @@ class VersionsFilterTests(unittest.TestCase):
 
     def test_filter_out_all(self):
         version_data = VersionData.parse("12.6.*")
-        vfilter = VersionsFilter(version_data.version())
+        vfilter = VersionsFilter(version_data)
 
         filtered = vfilter.filtered(self.versions_test_data_1)
 
@@ -76,7 +75,7 @@ class VersionsFilterTests(unittest.TestCase):
 
     def test_filter_all_plus(self):
         version_data = VersionData.parse("16.*.+")
-        vfilter = VersionsFilter(version_data.version())
+        vfilter = VersionsFilter(version_data)
 
         filtered = vfilter.filtered(self.versions_test_data_1)
 
@@ -85,7 +84,7 @@ class VersionsFilterTests(unittest.TestCase):
 
     def test_filter_all_plus(self):
         version_data = VersionData.parse("16.*.-")
-        vfilter = VersionsFilter(version_data.version())
+        vfilter = VersionsFilter(version_data)
 
         filtered = vfilter.filtered(self.versions_test_data_1)
 
@@ -94,7 +93,7 @@ class VersionsFilterTests(unittest.TestCase):
 
     def test_filter_minus_plus(self):
         version_data = VersionData.parse("16.-.+")
-        vfilter = VersionsFilter(version_data.version())
+        vfilter = VersionsFilter(version_data)
 
         filtered = vfilter.filtered(self.versions_test_data_2)
 
@@ -103,7 +102,7 @@ class VersionsFilterTests(unittest.TestCase):
 
     def test_filter_minus_plus(self):
         version_data = VersionData.parse("16.-.-")
-        vfilter = VersionsFilter(version_data.version())
+        vfilter = VersionsFilter(version_data)
 
         filtered = vfilter.filtered(self.versions_test_data_2)
 
@@ -112,7 +111,7 @@ class VersionsFilterTests(unittest.TestCase):
 
     def test_filter_plus_all(self):
         version_data = VersionData.parse("16.+.*")
-        vfilter = VersionsFilter(version_data.version())
+        vfilter = VersionsFilter(version_data)
 
         filtered = vfilter.filtered(self.versions_test_data_2)
 
@@ -122,7 +121,7 @@ class VersionsFilterTests(unittest.TestCase):
 
     def test_filter_plus_all(self):
         version_data = VersionData.parse("16.-.*")
-        vfilter = VersionsFilter(version_data.version())
+        vfilter = VersionsFilter(version_data)
 
         filtered = vfilter.filtered(self.versions_test_data_2)
 
@@ -132,7 +131,7 @@ class VersionsFilterTests(unittest.TestCase):
 
     def test_filter_all_plus_extended(self):
         version_data = VersionData.parse("16.*.+")
-        vfilter = VersionsFilter(version_data.version())
+        vfilter = VersionsFilter(version_data)
 
         filtered = vfilter.filtered(self.versions_test_data_2)
 
@@ -141,7 +140,7 @@ class VersionsFilterTests(unittest.TestCase):
 
     def test_filter_const_const_all(self):
         version_data = VersionData.parse("16.6.*")
-        vfilter = VersionsFilter(version_data.version())
+        vfilter = VersionsFilter(version_data)
 
         filtered = vfilter.filtered(self.versions_test_data_2)
 
@@ -152,7 +151,7 @@ class VersionsFilterTests(unittest.TestCase):
 
     def test_filter_const_all(self):
         version_data = VersionData.parse("16.*")
-        vfilter = VersionsFilter(version_data.version())
+        vfilter = VersionsFilter(version_data)
 
         filtered = vfilter.filtered(self.versions_test_data_2)
 
@@ -180,9 +179,9 @@ class VersionsRangeFilterTests(unittest.TestCase):
 
     def test_non_existing_borders(self):
         version_data = VersionData.parse("16.6.*[16.6.122,16.6.534]")
-        vrfilter = VersionsRangeFilter(version_data)
+        vfilter = VersionsFilter(version_data)
 
-        filtered = vrfilter.filtered(self.versions_test_data)
+        filtered = vfilter.filtered(self.versions_test_data)
 
         self.assertEqual(len(filtered), 4)
         self.assertEqual(filtered[0], "16.6.123")
@@ -192,17 +191,17 @@ class VersionsRangeFilterTests(unittest.TestCase):
 
     def test_wrong_borders_order(self):
         version_data = VersionData.parse("16.6.*[16.6.533,16.6.123]")
-        vrfilter = VersionsRangeFilter(version_data)
+        vfilter = VersionsFilter(version_data)
 
-        filtered = vrfilter.filtered(self.versions_test_data)
+        filtered = vfilter.filtered(self.versions_test_data)
 
         self.assertEqual(len(filtered), 0)
 
     def test_include_borders(self):
         version_data = VersionData.parse("16.6.*[16.6.-,16.6.+]")
-        vrfilter = VersionsRangeFilter(version_data)
+        vfilter = VersionsFilter(version_data)
 
-        filtered = vrfilter.filtered(self.versions_test_data)
+        filtered = vfilter.filtered(self.versions_test_data)
 
         self.assertEqual(len(filtered), 4)
         self.assertEqual(filtered[0], "16.6.123")
@@ -211,9 +210,9 @@ class VersionsRangeFilterTests(unittest.TestCase):
         self.assertEqual(filtered[3], "16.6.533")
 
         version_data = VersionData.parse("16.6.*[16.6.123,16.6.533]")
-        vrfilter = VersionsRangeFilter(version_data)
+        vfilter = VersionsFilter(version_data)
 
-        filtered = vrfilter.filtered(self.versions_test_data)
+        filtered = vfilter.filtered(self.versions_test_data)
 
         self.assertEqual(len(filtered), 4)
         self.assertEqual(filtered[0], "16.6.123")
@@ -222,9 +221,9 @@ class VersionsRangeFilterTests(unittest.TestCase):
         self.assertEqual(filtered[3], "16.6.533")
 
         version_data = VersionData.parse("16.6.*[16.6.122,16.6.534]")
-        vrfilter = VersionsRangeFilter(version_data)
+        vfilter = VersionsFilter(version_data)
 
-        filtered = vrfilter.filtered(self.versions_test_data)
+        filtered = vfilter.filtered(self.versions_test_data)
 
         self.assertEqual(len(filtered), 4)
         self.assertEqual(filtered[0], "16.6.123")
@@ -234,9 +233,9 @@ class VersionsRangeFilterTests(unittest.TestCase):
 
     def test_exclude_left_border(self):
         version_data = VersionData.parse("16.6.*(16.6.-,16.6.+]")
-        vrfilter = VersionsRangeFilter(version_data)
+        vfilter = VersionsFilter(version_data)
 
-        filtered = vrfilter.filtered(self.versions_test_data)
+        filtered = vfilter.filtered(self.versions_test_data)
 
         self.assertEqual(len(filtered), 3)
         self.assertEqual(filtered[0], "16.6.124")
@@ -244,9 +243,9 @@ class VersionsRangeFilterTests(unittest.TestCase):
         self.assertEqual(filtered[2], "16.6.533")
 
         version_data = VersionData.parse("16.6.*(16.6.123,16.6.533]")
-        vrfilter = VersionsRangeFilter(version_data)
+        vfilter = VersionsFilter(version_data)
 
-        filtered = vrfilter.filtered(self.versions_test_data)
+        filtered = vfilter.filtered(self.versions_test_data)
 
         self.assertEqual(len(filtered), 3)
         self.assertEqual(filtered[0], "16.6.124")
@@ -255,9 +254,9 @@ class VersionsRangeFilterTests(unittest.TestCase):
 
     def test_exclude_right_border(self):
         version_data = VersionData.parse("16.6.*[16.6.-,16.6.+)")
-        vrfilter = VersionsRangeFilter(version_data)
+        vfilter = VersionsFilter(version_data)
 
-        filtered = vrfilter.filtered(self.versions_test_data)
+        filtered = vfilter.filtered(self.versions_test_data)
 
         self.assertEqual(len(filtered), 3)
         self.assertEqual(filtered[0], "16.6.123")
@@ -265,9 +264,9 @@ class VersionsRangeFilterTests(unittest.TestCase):
         self.assertEqual(filtered[2], "16.6.125")
 
         version_data = VersionData.parse("16.6.*[16.6.123,16.6.533)")
-        vrfilter = VersionsRangeFilter(version_data)
+        vfilter = VersionsFilter(version_data)
 
-        filtered = vrfilter.filtered(self.versions_test_data)
+        filtered = vfilter.filtered(self.versions_test_data)
 
         self.assertEqual(len(filtered), 3)
         self.assertEqual(filtered[0], "16.6.123")
