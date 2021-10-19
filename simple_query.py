@@ -21,7 +21,7 @@ class SimpleQuery:
             else:
                 name = "%s.*" % name
         else:
-            name += "*"
+            name = "%s-*" % (base)
 
         return { "$match": name }
 
