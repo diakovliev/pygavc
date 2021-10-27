@@ -1,9 +1,11 @@
 import os
 import requests
+import shutil
 
 import query
-
 import metadata
+
+from simple_query import AqlResults
 
 
 class Connection:
@@ -18,7 +20,7 @@ class Connection:
         self.__repository   = repository
         self.__api_token    = api_token
 
-    def perform(self, query) -> metadata.Metadata:
+    def perform(self, query, download = False) -> metadata.Metadata:
 
         headers = {
             self.TOKEN_HDR:     self.__api_token,
@@ -43,6 +45,19 @@ class Connection:
         for version in versions:
             print("process version: %s" % version)
 
+            if download:
+                directory = "./request_downloads"
+                try:
+                    shutil.rmtree(directory)
+                except OSError as e:
+                    pass
+
+                try:
+                    os.mkdir(directory)
+                except OSError as e:
+                    print("Error: %s : %s" % (directory, e.strerror))
+                    return None
+
             sq = query.simple_queries_for(self.__repository, version)
             for q in sq:
 
@@ -61,6 +76,16 @@ class Connection:
                 else:
                     print("OK")
                     print(r.text)
+                    if download:
+                        aql_results = AqlResults.parse(r.text, self.__server)
+                        for obj in aql_results:
+                            print("Downloading '%s'..." % (obj.url()))
+                            r = requests.get(obj.url(), headers=headers)
+                            if r.status_code != 200:
+                                print("ERROR (%s)" % r.status_code)
+                            else:
+                                print("OK")
+                            open(directory + "/" + obj.name(), 'wb').write(r.content)
 
         return mm
 
@@ -77,7 +102,7 @@ def main():
     c.perform(q)
 
     q = query.Query.parse("charter.worldbox11.oemsdk.release:humaxwb11:15.4.+")
-    c.perform(q)
+    c.perform(q, True)
 
 if __name__ == "__main__":
     main()
