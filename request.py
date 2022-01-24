@@ -1,36 +1,22 @@
 import os
-import requests
+import sys
 import shutil
 
 import query
 import metadata
 
 from simple_query import AqlResults
-
+from artifactory_properties import ArtifactoryProperties
 
 class Connection:
-    TOKEN_HDR       = "X-JFrog-Art-Api"
-    DETAILS_HDR     = "X-Result-Detail"
-    DETAILS_VALUE   = "info, properties"
 
-    AQL_SUFFIX      = "api/search/aql"
+    def __init__(self, properties):
+        self.__props        = properties
 
-    def __init__(self, server, repository, api_token):
-        self.__server       = server
-        self.__repository   = repository
-        self.__api_token    = api_token
 
-    def perform(self, query, download = False) -> metadata.Metadata:
+    def perform(self, query, download = False):
 
-        headers = {
-            self.TOKEN_HDR:     self.__api_token,
-            self.DETAILS_HDR:   self.DETAILS_VALUE,
-        }
-
-        metadata_url = "%s/%s/%s" % (self.__server, self.__repository, query.metadata_path())
-
-        print(metadata_url)
-        r = requests.get(metadata_url, headers=headers)
+        r = self.__props.requests().metadata_for(query)
         if r.status_code != 200:
             print("ERROR (%s)" % r.status_code)
             return None
@@ -58,45 +44,44 @@ class Connection:
                     print("Error: %s : %s" % (directory, e.strerror))
                     return None
 
-            sq = query.simple_queries_for(self.__repository, version)
+            sq = self.__props.simple_queries_for(query, version)
             for q in sq:
 
                 aql = q.to_aql_query()
 
                 print("aql: %s" % aql)
 
-                aql_uri = "%s/%s" % (self.__server, self.AQL_SUFFIX)
-
-                print("aql uri: %s", aql_uri)
-
-                r = requests.post(aql_uri, headers=headers, data=aql)
+                r = self.__props.requests().perform_aql(aql)
                 if r.status_code != 200:
                     print("ERROR (%s)" % r.status_code)
                     return None
                 else:
-                    print("OK")
+                    print("http OK")
                     print(r.text)
                     if download:
-                        aql_results = AqlResults.parse(r.text, self.__server)
+                        aql_results = AqlResults.parse(r.text, self.__props.url())
                         for obj in aql_results:
-                            print("Downloading '%s'..." % (obj.url()))
-                            r = requests.get(obj.url(), headers=headers)
+                            sys.stdout.write("Downloading '%s' " % obj.url())
+                            sys.stdout.flush()
+                            r = self.__props.requests().get(obj.url())
                             if r.status_code != 200:
                                 print("ERROR (%s)" % r.status_code)
                             else:
-                                print("OK")
-                            open(directory + "/" + obj.name(), 'wb').write(r.content)
+                                with open(os.path.join(directory, obj.name()), 'wb') as f:
+                                    for chunk in r.iter_content(chunk_size=1024*1024):
+                                        f.write(chunk)
+                                        sys.stdout.write(".")
+                                        sys.stdout.flush()
+                                sys.stdout.write(" OK")
+                                sys.stdout.flush()
+                                print("")
 
         return mm
 
 
 
 def main():
-    token = os.environ["GAVC_SERVER_API_ACCESS_TOKEN"]
-    url = os.environ["GAVC_SERVER_URL"]
-    repo = os.environ["GAVC_SERVER_REPOSITORY"]
-
-    c = Connection(url, repo, token)
+    c = Connection(ArtifactoryProperties.from_env())
 
     q = query.Query.parse("entone.sdk.release:mipsel_linux:*[20,22]:oemsdk_release@zip,oemsdk_debug@zip")
     c.perform(q)
