@@ -18,6 +18,9 @@ class AqlObject:
     def md5(self):
         return self.__data["actual_md5"]
 
+    def sha1(self):
+        return self.__data["actual_sha1"]
+
     def url(self):
         return self.__data["server"] + "/" + self.__data["repo"] + "/" + self.__data["path"] + "/" + self.__data["name"]
 
@@ -26,6 +29,7 @@ class AqlObject:
         result += self.name() + "\n"
         result += "size: " + str(self.size()) + "\n"
         result += "md5: " + str(self.md5()) + "\n"
+        result += "sha1: " + str(self.sha1()) + "\n"
         result += "created: " + self.__data["created"] + "\n"
         result += "url: " + self.url() + "\n"
         return result
