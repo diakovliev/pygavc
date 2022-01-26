@@ -2,20 +2,13 @@ import os
 import filecmp
 import shutil
 
-from parameters import GavcClientParamsHandler
-
 class ArtifactoryObjectsCache:
-    SUBROOT_DIR = "pygavc"
-    OBJECTS_DIR = "objects"
 
-    def __init__(self, client):
-        self.__client       = client
-        self.__storage_root = os.path.join(client.get_param(GavcClientParamsHandler.CACHE_PATH_PARAM), self.SUBROOT_DIR, self.OBJECTS_DIR)
-        # TODO: Move to cache initializer
-        if not os.path.isdir(self.__storage_root): os.makedirs(self.__storage_root)
+    def __init__(self, storage_root):
+        self.__storage_root = storage_root
 
-    def enabled(self):
-        return True
+    def initialize(self):
+        return self
 
     def storage_root(self):
         return self.__storage_root

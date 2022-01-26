@@ -41,11 +41,11 @@ class ArtifactoryRequests:
         """
             HTTP get. Cached version.
         """
-        if not self.__client.requests_cache().enabled():
+        if not self.__client.cache().enabled():
             return self.get2(query)
 
         # TODO: Lock requests cache
-        cache = self.__client.requests_cache()
+        cache = self.__client.cache().requests()
         if primary_source == self.SOURCE_CACHE:
             if cache.contains_get(query):
                 print("GET(cached) '%s' use cached result" % query)
@@ -69,11 +69,11 @@ class ArtifactoryRequests:
         """
             HTTP post. Cached version.
         """
-        if not self.__client.requests_cache().enabled():
+        if not self.__client.cache().enabled():
             return self.post2(query, data)
 
         # TODO: Lock requests cache
-        cache = self.__client.requests_cache()
+        cache = self.__client.cache().requests()
         if primary_source == self.SOURCE_CACHE:
             if cache.contains_post(query, data):
                 print("POST(cached) '%s' use cached result" % query)
@@ -129,12 +129,12 @@ class ArtifactoryRequests:
                 f.write(chunk)
 
     def place_asset_into(self, destination_file, asset):
-        if not self.__client.objects_cache().enabled():
+        if not self.__client.cache().enabled():
             print("Download object: '%s'" % asset.url())
             self.download_file(destination_file, asset.url())
             return
 
-        cache = self.__client.objects_cache()
+        cache = self.__client.cache().objects()
         if cache.contains(asset) and cache.validate_destination(asset, destination_file):
             print("Destination is actual: '%s'" % asset.url())
             return

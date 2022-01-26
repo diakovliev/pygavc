@@ -3,8 +3,7 @@ import os
 from parameters import BaseParamsHandler
 from parameters import GavcClientParamsHandler
 from artifactory_requests import ArtifactoryRequests
-from artifactory_requests_cache import ArtifactoryRequestsCache
-from artifactory_objects_cache import ArtifactoryObjectsCache
+from artifactory_cache import ArtifactoryCache
 
 
 class ArtifactoryClient(GavcClientParamsHandler):
@@ -20,19 +19,12 @@ class ArtifactoryClient(GavcClientParamsHandler):
             self.DETAILS_HDR:   self.DETAILS_VALUE,
         }
 
-    def __init_requests_cache(self):
-        self.__requests_cache = ArtifactoryRequestsCache(self)
-
-    def __init_objects_cache(self):
-        self.__objects_cache = ArtifactoryObjectsCache(self)
-
     def __make_requests(self):
         self.__requests = ArtifactoryRequests(self)
 
     def __init__(self):
         GavcClientParamsHandler.__init__(self)
-        self.__init_objects_cache()
-        self.__init_requests_cache()
+        self.__cache = ArtifactoryCache(self)
         self.__make_headers()
         self.__make_requests()
 
@@ -60,11 +52,8 @@ class ArtifactoryClient(GavcClientParamsHandler):
     def requests(self):
         return self.__requests
 
-    def requests_cache(self):
-        return self.__requests_cache
-
-    def objects_cache(self):
-        return self.__objects_cache
+    def cache(self):
+        return self.__cache
 
     def simple_queries_for(self, query, version):
         return query.simple_queries_for(self.repository(), version)

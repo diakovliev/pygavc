@@ -1,7 +1,6 @@
 import os
 import hashlib
 
-from parameters import GavcClientParamsHandler
 from base_database import BaseDatabase
 
 class RequestsDatabase(BaseDatabase):
@@ -35,38 +34,42 @@ class RequestsDatabase(BaseDatabase):
         else:
             return None
 
-class ArtifactoryRequestsCache:
-    ENCODING = 'utf-8'
+    def ensure(self, key, text, query, data):
+        if self.text(key) is not None:
+            self.update(key, text, query, data)
+        else:
+            self.insert(key, text, query, data)
 
-    SUBROOT_DIR = 'pygavc'
-    DATABASE_FILE = 'requests.db'
+
+class ArtifactoryRequestsCache:
+    ENCODING        = 'utf-8'
+    SUBROOT_DIR     = 'pygavc'
+    HTTP_OK_CODE    = 200
 
     class Result:
         def __init__(self, status_code, text):
             self.status_code    = status_code
             self.text           = text
 
-    def __init__(self, client):
-        self.__client   = client
-        self.__storage  = os.path.join(client.get_param(GavcClientParamsHandler.CACHE_PATH_PARAM), self.SUBROOT_DIR, self.DATABASE_FILE)
-        self.__cache    = RequestsDatabase(self.__storage)
+    def __init__(self, database):
+        self.__db = RequestsDatabase(database)
 
-    def enabled(self):
-        return True
+    def initialize(self):
+        return self
 
-    def __cache_key(self, selector0, selector1 = None):
+    def __db_key(self, selector0, selector1 = None):
         data = selector0.encode(self.ENCODING)
         if selector1:
             data += selector1.encode(self.ENCODING)
         return hashlib.sha256(data).hexdigest()
 
     def contains_post(self, query, data):
-        cache_key = self.__cache_key(query, data)
-        return self.__cache.text(cache_key) is not None
+        cache_key = self.__db_key(query, data)
+        return self.__db.text(cache_key) is not None
 
     def post(self, query, data):
-        cache_key = self.__cache_key(query, data)
-        return self.Result(200, self.__cache.text(cache_key))
+        cache_key = self.__db_key(query, data)
+        return self.Result(self.HTTP_OK_CODE, self.__db.text(cache_key))
 
     def contains_get(self, query):
         return self.contains_post(query, None)
@@ -78,9 +81,6 @@ class ArtifactoryRequestsCache:
         return self.update_post(query, None, query_result)
 
     def update_post(self, query, data, query_result):
-        cache_key = self.__cache_key(query, data)
-        if self.__cache.text(cache_key) is not None:
-            self.__cache.update(cache_key, query_result.text, query, data)
-        else:
-            self.__cache.insert(cache_key, query_result.text, query, data)
+        cache_key = self.__db_key(query, data)
+        self.__db.ensure(cache_key, query_result.text, query, data)
         return query_result
