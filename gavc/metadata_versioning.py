@@ -1,4 +1,4 @@
-from xml_utils import XmlUtils
+from .xml_utils import XmlUtils
 
 class MetadataVersioning:
     def __init__(self):

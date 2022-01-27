@@ -2,8 +2,8 @@ import unittest
 import lark
 import xml
 
-from lark_utils import TreeHelper
-from xml_utils import XmlUtils
+from gavc.lark_utils import TreeHelper
+from gavc.xml_utils import XmlUtils
 
 class LarkUtilsTests(unittest.TestCase):
 

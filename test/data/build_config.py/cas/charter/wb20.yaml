@@ -1,0 +1,6 @@
+import: common.yaml
+
+args:
+    cas_platform: "7250"
+    cas_module_0: dmc/libdmc-1.0.32-C762B96C3B5CFB745D0B473DEBB202A9-RELEASE.so
+    cas_module_1: dpk/libdpk.so.2.3.24.bcm7250b0.br.p.CHTR

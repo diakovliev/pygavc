@@ -1,5 +1,5 @@
-from version import Op
-from versions_comparator import VersionsComparator
+from .version import Op
+from .versions_comparator import VersionsComparator
 
 class SPartsTableElement:
 

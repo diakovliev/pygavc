@@ -2,8 +2,8 @@ import os
 import sys
 import requests
 
-from metadata import Metadata
-from simple_query import AqlResults
+from .metadata import Metadata
+from .simple_query import AqlResults
 
 class ArtifactoryRequests:
     HTTP_OK = 200

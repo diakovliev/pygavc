@@ -1,0 +1,147 @@
+env:
+    OEM_TOOLCHAIN_PATH                          : "/opt/toolchains/stbgcc-4.8-1.5"
+    TOOLCHAIN_PATH                              : "/opt/toolchains/zstbgcc-8.3.0-arm-eglibc-2.18-8"
+
+args:
+    cross_os                                    : "linux"
+    cross_cpu                                   : "arm"
+    cross_abi                                   : "gnueabihf"
+    toolchain_with_no_intl                      : false
+    oemsdk_gavc                                 : "charter.worldbox20.oemsdk.release:humaxwb20:16.2.+"
+    hdf_gavc                                    : "charter:hdf:+"
+
+    # charter-humaxwb20
+    mso                                         : "charter"
+    target_platform                             : "humaxwb20"
+    stb_description                             : "Charter_Worldbox_v2_STB"
+
+    third_parties_sets:
+        - "common"
+        - "jpeg_internal"
+        - "charter_qam"
+        - "disk_storage"
+        - "rest_server"
+        - "amazon_video"
+        - "netflix"
+        - "rf4ce_glib"
+        - "google-v8"
+        - "cobalt"
+        - "appcloud"
+        - "cwmp"
+        - "ntptime"
+        - "mapt"
+        - "syslog-ng"
+
+    brcm_nexus                                  : true
+    use_platform_openssl                        : true
+
+    ncas_ignore_missing_symbols                 : true
+    ncas_ignore_cas_dsmcc_session_not_supported : true
+    ncas_disable_hardware_id_check              : true
+    video_secure_heap                           : true
+    feature_closed_captions                     : true
+    dsgcc                                       : true
+    dsgcc_client_registration                   : true
+    eas_scte_18                                 : true
+    nexus_multiprocess                          : true
+    pip                                         : true
+    si                                          : true
+    cds_group_plant_type                        : "(plant_type=1)|(plant_type=0)"
+
+    snmp                                        : true
+
+    transport2                                  : true
+    transport2_dri_standalone                   : false
+    klog_monitor                                : true
+    nexus_random                                : true
+    hdmi_hdcp                                   : true
+    hdmi_cec                                    : true
+    fast_scroll                                 : true
+    cmd2k_local_server                          : true
+    cmd2k_default_server_port                   : 65434
+    oem_library                                 : true
+    openssl                                     : true
+    system_sound                                : true
+    system_sound_one_playback                   : true
+    tts                                         : true
+    netflix_control                             : true
+    lowpower                                    : true
+    temp_management                             : true
+    ipv6                                        : true
+    oem_rf4ce                                   : true
+    oem_rf4ce_use_zodiac_glib                   : true
+    oem_bfw_api                                 : true
+    oem_hdf_api                                 : true
+    oem_cdl_api                                 : true
+    oem_api_wrappers                            : false
+    feature_hw_watchdog                         : true
+    dtcp                                        : true
+    svp                                         : true
+    sbe_api                                     : true
+    chrtrsi                                     : true
+    stblookup_service                           : true
+    ip_video                                    : true
+    ip_video_hls                                : true
+    ip_video_dash                               : true
+    ip_video_http_pd                            : true
+    ip_video_abr                                : true
+    qam                                         : true
+    udp_cas_enabled                             : true
+
+    history                                     : false
+    stbdiag                                     : true
+
+    frontend_allocator_indexed                  : false
+
+    dvr                                         : true
+    dlna_source                                 : false
+    dvr_crypto                                  : true
+    dvr_otp_protected                           : true
+    dvr_hw_pat_pmt_injector                     : true
+    tsb                                         : false
+
+    rest_update_client                          : true
+
+    carousel_test_mode                          : false
+
+    nexus_multiprocess_mode_client              : false
+
+    cable_card                                  : false
+
+    diagjail                                    : true
+
+    ultrahd                                     : false
+    sd                                          : false
+
+    dpi_scte_35                                 : false
+    nexus_log_monitor                           : false
+
+    snmputils                                   : true
+
+    drm                                         : true
+    drm_clearkey                                : true
+    drm_playready                               : true
+    drm_widevine                                : true
+    drm_eme_support                             : true
+    fkps                                        : true
+
+    disk_storage_udev                           : true
+    disk_storage_atasmart                       : true
+
+    charter_cas_dpk                             : true
+    charter_cas_dmc                             : true
+
+    vbs_diag_pages                              : false
+
+    feature_fw_upgrade                          : true
+
+    feature_audio_dac_limitation_enabled        : true
+    feature_audio_dac_use_num                   : 1
+
+    feature_audio_i2s_limitation_enabled        : true
+    feature_audio_i2s_use_num                   : 1
+
+sysroot:
+# userver dependencies
+    - "//third-parties:glib_sysroot"
+    - "//third-parties:eudev_sysroot"

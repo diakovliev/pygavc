@@ -1,4 +1,4 @@
-from versions_matcher import VersionsMatcher
+from .versions_matcher import VersionsMatcher
 
 class VersionsComparator:
 

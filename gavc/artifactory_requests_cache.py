@@ -1,7 +1,7 @@
 import os
 import hashlib
 
-from base_database import BaseDatabase
+from .base_database import BaseDatabase
 
 class RequestsDatabase(BaseDatabase):
     CREATE_TABLES = """

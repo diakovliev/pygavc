@@ -1,9 +1,9 @@
 import os
 
-from parameters import BaseParamsHandler
-from parameters import GavcClientParamsHandler
-from artifactory_requests import ArtifactoryRequests
-from artifactory_cache import ArtifactoryCache
+from .parameters import BaseParamsHandler
+from .parameters import GavcClientParamsHandler
+from .artifactory_requests import ArtifactoryRequests
+from .artifactory_cache import ArtifactoryCache
 
 
 class ArtifactoryClient(GavcClientParamsHandler):

@@ -1,9 +1,8 @@
 import os
 import shutil
 
-import query
-
-from artifactory_client import ArtifactoryClient
+from gavc.query import Query
+from gavc.artifactory_client import ArtifactoryClient
 
 class Downloader:
 
@@ -36,10 +35,10 @@ def main():
 
     d = Downloader(ArtifactoryClient())
 
-    q = query.Query.parse("entone.sdk.release:mipsel_linux:*[20,22]:oemsdk_release@zip,oemsdk_debug@zip")
+    q = Query.parse("entone.sdk.release:mipsel_linux:*[20,22]:oemsdk_release@zip,oemsdk_debug@zip")
     d.perform(q)
 
-    q = query.Query.parse("charter.worldbox11.oemsdk.release:humaxwb11:15.4.+")
+    q = Query.parse("charter.worldbox11.oemsdk.release:humaxwb11:15.4.+")
     d.perform(q)
 
 if __name__ == "__main__":

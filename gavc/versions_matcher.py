@@ -1,8 +1,8 @@
 import re
 
-from version import Op
-from version import Version
-from version import VersionData
+from .version import Op
+from .version import Version
+from .version import VersionData
 
 class VersionsMatcher:
 

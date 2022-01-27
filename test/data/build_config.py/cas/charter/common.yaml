@@ -1,0 +1,9 @@
+args:
+    cas          : true
+    cas_platform : "default"
+
+sysroot:
+    - //cas/charter:sysroot
+
+nfs:
+    - //cas/charter:nfs

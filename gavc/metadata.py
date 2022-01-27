@@ -1,7 +1,6 @@
-from xml_utils import XmlUtils
-from versions_filter import VersionsFilter
-
-import metadata_versioning
+from .xml_utils import XmlUtils
+from .versions_filter import VersionsFilter
+from .metadata_versioning import MetadataVersioning
 
 class Metadata:
 
@@ -28,7 +27,7 @@ class Metadata:
         self.__version      = XmlUtils.get_value_by_path(doc.documentElement, "/version")
 
         versioning          = XmlUtils.get_item_by_path(doc.documentElement, "/versioning")
-        self.__versioning   = metadata_versioning.MetadataVersioning.from_element(versioning)
+        self.__versioning   = MetadataVersioning.from_element(versioning)
 
         return self
 

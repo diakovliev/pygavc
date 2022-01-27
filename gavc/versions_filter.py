@@ -1,13 +1,13 @@
 from functools import cmp_to_key
 
-from version import Op
-from version import Range
-from version import Version
-from version import VersionData
-from versions_matcher import VersionsMatcher
-from versions_comparator import VersionsComparator
-from sparts_table_comparator import SPartsTableElement
-from sparts_table_comparator import SpartsTableComparator
+from .version import Op
+from .version import Range
+from .version import Version
+from .version import VersionData
+from .versions_matcher import VersionsMatcher
+from .versions_comparator import VersionsComparator
+from .sparts_table_comparator import SPartsTableElement
+from .sparts_table_comparator import SpartsTableComparator
 
 class VersionsFilter:
 

@@ -1,0 +1,133 @@
+import:
+    - "common/charter-humaxwb20-base.yaml"
+    - "cas/charter/wb20.yaml"
+
+args:
+
+    target_product          : "powerup"
+    target_core_services    : "default"
+    build_variant           : "prd"
+
+    powerup                 : true
+    powerup_target          : "humaxwb"
+    powerup_dc_enabled      : true
+    powerup_dob2pe_enabled  : true
+    powerup_dob2pe_provisioning_enabled : true
+    powerup_dvr_enabled     : true
+    powerup_dts_enabled     : true
+    powerup_ipg_enabled     : true
+    powerup_ns_quiet_mode_enabled : true
+    powerup_ns_encryption_enabled : true
+    powerup_ns_enabled      : true
+    powerup_cloud_dsg_enabled   : true
+    powerup_ns_ams_rudp_enabled : true
+    powerup_ns_ams_tcp_enabled  : true
+    powerup_ns_transport_selector_enabled : true
+    powerup_profile_enabled : true
+    powerup_sgd_enabled     : true
+    powerup_sdv_enabled     : true
+    powerup_settings_enabled: true
+    powerup_dob2pe_native_app_enabled : true
+    powerup_zs_amazon_enabled : true
+    powerup_zs_auto_activation_tc: true
+    powerup_zs_youtube_enabled: true
+    powerup_zs_zebra_player_enabled: true
+    powerup_zs_appcloud_enabled: true
+    powerup_zs_app_launcher_enabled: true
+    powerup_dpi_enabled     : true
+    powerup_cloud_reminders_enabled : true
+    powerup_default_entitlements_enabled : true
+    powerup_limited_mode_observer_enabled : true
+    powerup_has_curl : true
+    powerup_has_ssl  : true
+    cds_manager             : true
+    dob2_sdk_gavc           : "dob2sdk.trunk:DOB2SDK:+"
+    dob2pe_sdk_gavc         : "dob2pe_sdk.valhalla_bv3_trunk:DOB2PE_SDK:+"
+    vwde_sdk_gavc           : "valhalla.fw.vwde.release:arm:2.0.4"
+    vbs_diag_pages          : true
+    avn                     : "rfbtv"
+    feature_early_splash    : true
+    boot_poweron_popup      : true
+
+    build_zebra_mini_no_javascript              : false
+    gst_player_variant                          : "vbs"
+    history                 : true
+
+    feature_app_service: true
+    feature_zebra_app_service: "app_controller"
+    feature_log_storage     : true
+    feature_signal_health_check            : true
+    feature_diag_boot_screen: true
+    feature_am_events_fw_update: true
+    feature_mapt            : true
+    dump_encode_key         : "cc179376e80d73e9ae77e69d70075411e248d84502d4942b61c506061684f6a8"
+    dump_encode_iv          : "37a2d0390d6ac5ea1f5b8ef5e31d9353"
+    feature_broadcasting_scheme: "atsc"
+
+sysroot:
+    # Components
+    - "//components/mapt:sysroot"
+    - "//components/vbs:sysroot"
+    - "//components/supervisor:sysroot"
+    - "//components/powerup:sysroot"
+    - "//components/default_cds_group:sysroot"
+    - "//components/stbdiag:sysroot"
+    - "//components/snmp_server:sysroot"
+    - "//components/limited_mode:sysroot"
+
+    - "//third-parties:amazon_video_sysroot"
+    - "//third-parties:netflix_sysroot"
+    - "//third-parties:cpsl_sysroot"
+
+    - "//components/zebra_mini:sysroot"
+    - "//ui/charter/trick_bar:sysroot"
+    - "//third-parties:cobalt_sysroot"
+
+    - "//third-parties/appcloud:sysroot"
+
+    # SSL root certificates
+    - "//third-parties:cacert_charter_sysroot"
+    - "//third-parties:cacert_amazon_sysroot"
+
+    - "//third-parties:syslog-ng_sysroot"
+
+    # DRI
+    # - "//components/transport_standalone:sysroot"
+
+    # history server
+    - "//components/history/server:sysroot"
+
+nfs:
+    # Components
+    - "//components/mapt:nfs"
+    - "//components/vbs:nfs"
+    - "//components/supervisor:nfs"
+    - "//components/powerup:nfs"
+    - "//components/default_cds_group:nfs"
+    - "//components/stbdiag:nfs"
+    - "//components/snmp_server:nfs"
+    - "//components/limited_mode:nfs"
+
+    - "//third-parties:amazon_video_nfs"
+    - "//third-parties:netflix_nfs"
+    - "//third-parties:cpsl_nfs"
+
+    - "//components/zebra_mini:nfs"
+    - "//ui/charter/trick_bar:nfs"
+    - "//third-parties:cobalt_nfs"
+    - "//third-parties/appcloud:nfs"
+
+    # SSL root certificates
+    - "//third-parties:cacert_charter_nfs"
+    - "//third-parties:cacert_amazon_nfs"
+
+    - "//third-parties:syslog-ng_nfs"
+
+    # DRI
+    # - "//components/transport_standalone:nfs"
+
+    # Breakpad host utils
+    - "//third-parties:breakpad_host_nfs"
+
+    # history server
+    - "//components/history/server:nfs"

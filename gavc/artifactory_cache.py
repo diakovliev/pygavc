@@ -1,8 +1,8 @@
 import os
 
-from parameters import GavcClientParamsHandler
-from artifactory_requests_cache import ArtifactoryRequestsCache
-from artifactory_objects_cache import ArtifactoryObjectsCache
+from .parameters import GavcClientParamsHandler
+from .artifactory_requests_cache import ArtifactoryRequestsCache
+from .artifactory_objects_cache import ArtifactoryObjectsCache
 
 
 class ArtifactoryCache:

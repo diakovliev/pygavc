@@ -1,7 +1,8 @@
 import lark
-import simple_query
-import lark_utils
-import version
+
+from .simple_query import SimpleQuery
+from .lark_utils import TreeHelper
+from .version import VersionData
 
 
 class Query:
@@ -24,7 +25,7 @@ class Query:
 
     @staticmethod
     def parse(input_string):
-        tree = lark_utils.TreeHelper(lark.Lark(Query.GRAMMAR, parser='lalr').parse(input_string))
+        tree = TreeHelper(lark.Lark(Query.GRAMMAR, parser='lalr').parse(input_string))
         self = Query()
 
         self.__group = tree.tree_by_path("group").first_value()
@@ -33,7 +34,7 @@ class Query:
         if len(tree) < 3:
             return self
 
-        self.__version = version.VersionData.parse(tree.tree_by_path("version").first_value())
+        self.__version = VersionData.parse(tree.tree_by_path("version").first_value())
 
         if len(tree) < 4:
             return self
@@ -83,9 +84,9 @@ class Query:
 
     def simple_queries_for(self, repo, version):
         if not self.__classifiers:
-            return ( simple_query.SimpleQuery(self, repo, self.__group, self.__name, version), )
+            return ( SimpleQuery(self, repo, self.__group, self.__name, version), )
         else:
-            return ( simple_query.SimpleQuery(self, repo, self.__group, self.__name, version, classifier[0], classifier[1]) for classifier in self.__classifiers )
+            return ( SimpleQuery(self, repo, self.__group, self.__name, version, classifier[0], classifier[1]) for classifier in self.__classifiers )
 
 
 if __name__ == "__main__":
