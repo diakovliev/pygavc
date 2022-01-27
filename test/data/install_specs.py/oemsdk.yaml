@@ -1,0 +1,5 @@
+installs:
+    - gavc_arg: oemsdk_gavc
+      root_dir: platform_sdk/kamai515
+      specs:
+        - oemsdk_debug

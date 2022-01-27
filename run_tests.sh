@@ -4,6 +4,7 @@ pipenv install
 
 TESTS=$(cat<<EOF
 test.build_config
+test.install_specs
 test.utils_test
 test.version_test
 test.versions_matcher_test

@@ -1,0 +1,10 @@
+installs:
+    - gavc_arg: oemsdk_gavc
+      root_dir: platform_sdk/emscripten
+      specs:
+        - oemsdk_debug
+
+    - gavc_arg: emsdk_python_gavc
+      root_dir: platform_sdk/python
+      specs:
+        - python
