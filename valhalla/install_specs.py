@@ -48,8 +48,10 @@ class InstallSpecs:
             gavc_arg    = ""
             if InstallSpecs.GAVC in input_object:
                 gavc = input_object[InstallSpecs.GAVC]
+                assert not InstallSpecs.GAVC_ARG in input_object
             else:
                 gavc_arg = input_object[InstallSpecs.GAVC_ARG]
+                assert not InstallSpecs.GAVC in input_object
 
             root_dir = os.path.join(installs_root_dir, input_object[InstallSpecs.ROOT_DIR])
 

@@ -1,0 +1,4 @@
+args:
+    oemsdk_gavc                 : "zodiac.emsdk.original.release:sdk:16"
+    emsdk_python_gavc           : "zodiac.python:python:3.9.2_1_64bit"
+    oemsdk_has_images_tools     : false

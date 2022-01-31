@@ -9,7 +9,6 @@ class Downloader:
     def __init__(self, client):
         self.__client = client
 
-
     def perform(self, query):
 
         directory = "./request_downloads"
@@ -28,7 +27,7 @@ class Downloader:
 
             destination_file = os.path.join(directory, asset.name())
 
-            self.__client.requests().place_asset_into(destination_file, asset)
+            self.__client.requests().retrieve_asset(asset, destination_file)
 
 
 def main():

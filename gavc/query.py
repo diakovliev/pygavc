@@ -23,6 +23,20 @@ class Query:
         self.__version      = version
         self.__classifiers  = classifiers
 
+    def make_subquery(self, **kwargs):
+        group       = self.__group
+        name        = self.__name
+        version     = self.__version
+        classifiers = self.__classifiers
+        extension   = ""
+        if "version" in kwargs:
+            version = VersionData.parse(kwargs.get("version"))
+        if "extension" in kwargs:
+            extenstion = kwargs.get("extenstion")
+        if "classifier" in kwargs:
+            classifiers = [ (kwargs.get("classifier"), extension) ]
+        return Query(group, name, version, classifiers)
+
     @staticmethod
     def parse(input_string):
         tree = TreeHelper(lark.Lark(Query.GRAMMAR, parser='lalr').parse(input_string))

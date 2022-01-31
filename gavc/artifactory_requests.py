@@ -128,21 +128,26 @@ class ArtifactoryRequests:
             for chunk in r.iter_content(chunk_size=1024*1024):
                 f.write(chunk)
 
-    def place_asset_into(self, destination_file, asset):
+    def retrieve_asset(self, asset, destination_file = None):
         if not self.__client.cache().enabled():
+            assert destination_file is not None
             print("Download object: '%s'" % asset.url())
             self.download_file(destination_file, asset.url())
-            return
+            return destination_file
 
         cache = self.__client.cache().objects()
-        if cache.contains(asset) and cache.validate_destination(asset, destination_file):
-            print("Destination is actual: '%s'" % asset.url())
-            return
+        if cache.contains(asset) and destination_file is None:
+            return cache.asset_path(asset)
 
-        if cache.contains(asset) and not cache.validate_destination(asset, destination_file):
-            print("Cached object: '%s'" % asset.url())
-            cache.copy_asset(asset, destination_file)
-            return
+        if destination_file is not None:
+            if cache.contains(asset) and cache.validate_destination(asset, destination_file):
+                print("Destination is actual: '%s'" % asset.url())
+                return destination_file
+
+            if cache.contains(asset) and not cache.validate_destination(asset, destination_file):
+                print("Cached object: '%s'" % asset.url())
+                cache.copy_asset(asset, destination_file)
+                return destination_file
 
         # TODO: Lock destination
         print("Download new object: '%s'" % asset.url())
@@ -150,6 +155,9 @@ class ArtifactoryRequests:
         temp_file           = asset_path + ".dwn"
 
         self.download_file(temp_file, asset.url())
-
         cache.move_file(temp_file, asset_path)
+        if destination_file is None:
+            return asset_path
+
         cache.copy_asset(asset, destination_file)
+        return destination_file
