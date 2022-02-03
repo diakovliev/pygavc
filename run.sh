@@ -1,4 +1,5 @@
 #! /bin/sh
 
-pipenv install
-pipenv run python $@
+pip install -r requirements.txt
+# pip freeze > requirements.txt
+python $@

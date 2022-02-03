@@ -1,6 +1,7 @@
 #! /bin/sh
 
-pipenv install
+pip install -r requirements.txt
+# pip freeze > requirements.txt
 
 TESTS=$(cat<<EOF
 test.build_config
@@ -17,5 +18,5 @@ EOF
 set -e
 
 for t in ${TESTS}; do
-pipenv run python -m ${t} -v
+	python -m ${t} -v
 done
