@@ -4,6 +4,8 @@ import requests
 
 from .metadata import Metadata
 from .simple_query import AqlResults
+from functions.bind import Bind
+
 
 class ArtifactoryRequests:
     HTTP_OK = 200
@@ -37,61 +39,56 @@ class ArtifactoryRequests:
         """
         return self.session().post(query, headers=self.__client.headers(), data=data)
 
-    def get(self, query, primary_source = SOURCE_CACHE):
+
+
+    def __cached_request(self, cache_contains, cache_get, cache_update, request_get, primary_source = SOURCE_CACHE):
         """
             HTTP get. Cached version.
         """
         if not self.__client.cache().enabled():
-            return self.get2(query)
+            return request_get()
 
         # TODO: Lock requests cache
         cache = self.__client.cache().requests()
         if primary_source == self.SOURCE_CACHE:
-            if cache.contains_get(query):
-                print("GET(cached) '%s' use cached result" % query)
-                return cache.get(query)
-            print("GET '%s' update cache" % query)
-            r = self.get2(query)
+            if cache_contains():
+                print("GET(cached) '%s' use cached result" % cache_get)
+                return cache_get()
+            print("GET '%s' update cache" % request_get)
+            r = request_get()
             if r.status_code != self.HTTP_OK:
                 return r
         elif primary_source == self.SOURCE_ORIGIN:
-            print("GET '%s' update cache" % query)
-            r = self.get2(query)
+            print("GET '%s' update cache" % request_get)
+            r = request_get()
             if r.status_code != self.HTTP_OK:
-                if not cache.contains_get(query):
+                if not cache_contains():
                     return r
-                print("GET(cached) '%s' use cached result" % query)
-                return cache.get(query)
+                print("GET(cached) '%s' use cached result" % cache_get)
+                return cache_get()
 
-        return cache.update_get(query, r)
+        return cache_update(r)
+
+    def get(self, query, primary_source = SOURCE_CACHE):
+        cache = self.__client.cache().requests()
+        return self.__cached_request(
+            Bind(cache.contains_get, query),
+            Bind(cache.get, query),
+            Bind(cache.update_get, query),
+            Bind(self.get2, query),
+            primary_source
+        )
 
     def post(self, query, data, primary_source = SOURCE_CACHE):
-        """
-            HTTP post. Cached version.
-        """
-        if not self.__client.cache().enabled():
-            return self.post2(query, data)
-
-        # TODO: Lock requests cache
         cache = self.__client.cache().requests()
-        if primary_source == self.SOURCE_CACHE:
-            if cache.contains_post(query, data):
-                print("POST(cached) '%s' use cached result" % query)
-                return cache.post(query, data)
-            print("POST '%s' update cache" % query)
-            r = self.post2(query, data)
-            if r.status_code != self.HTTP_OK:
-                return r
-        elif primary_source == self.SOURCE_ORIGIN:
-            print("POST '%s' update cache" % query)
-            r = self.post2(query, data)
-            if r.status_code != self.HTTP_OK:
-                if not cache.contains_post(query, data):
-                    return r
-                print("POST(cached) '%s' use cached result" % query)
-                return cache.post(query, data)
+        return self.__cached_request(
+            Bind(cache.contains_post, query, data),
+            Bind(cache.post, query, data),
+            Bind(cache.update_post, query, data),
+            Bind(self.post2, query, data),
+            primary_source
+        )
 
-        return cache.update_post(query, data, r)
 
     def metadata_for(self, query):
         metadata_url = self.__client.repository_metadata_url(query.metadata_path())
