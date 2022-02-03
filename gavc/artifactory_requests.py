@@ -1,6 +1,7 @@
 import os
 import sys
 import requests
+import tqdm
 
 from .metadata import Metadata
 from .simple_query import AqlResults
@@ -27,19 +28,20 @@ class ArtifactoryRequests:
             self.__session = requests.Session()
         return self.__session
 
-    def get2(self, query):
+    def get2(self, query, **kwargs):
         """
             HTTP get. Uncached version.
         """
-        return self.session().get(query, headers=self.__client.headers())
+        kwargs['headers'] = self.__client.headers()
+        return self.session().get(query, **kwargs)
 
-    def post2(self, query, data):
+    def post2(self, query, data, **kwargs):
         """
             HTTP post. Uncached version.
         """
-        return self.session().post(query, headers=self.__client.headers(), data=data)
-
-
+        kwargs['headers'] = self.__client.headers()
+        kwargs['data'] = data
+        return self.session().post(query, **kwargs)
 
     def __cached_request(self, cache_contains, cache_get, cache_update, request_get, primary_source = SOURCE_CACHE):
         """
@@ -104,32 +106,39 @@ class ArtifactoryRequests:
         return AqlResults.parse(r.text, self.__client.url())
 
     def assets_for(self, query):
-        ret = []
         for version in self.metadata_for(query).versions_for(query):
             for sq in self.__client.simple_queries_for(query, version):
                 for asset in self.perform_aql(sq.to_aql_query()):
-                    ret.append(asset)
-        return ret
+                    yield asset
 
-    def download_file(self, destination_file, url):
+    def __download_file(self, destination_file, url, enable_progress_bar=True):
         # TODO: Lock destination
 
         destination_parent_path = os.path.abspath(os.path.join(destination_file, os.pardir))
         if not os.path.isdir(destination_parent_path): os.makedirs(destination_parent_path)
 
-        r = self.get2(url)
+        r = self.get2(url, stream=True)
         if r.status_code != self.HTTP_OK:
             raise self.HttpError(r.status_code)
 
+        progress_bar = None
+        if enable_progress_bar:
+            total_size_in_bytes = int(r.headers.get('content-length', 0))
+            block_size          = 1024*1024
+            progress_bar        = tqdm.tqdm(total=total_size_in_bytes, unit='iB', unit_scale=True)
+
         with open(destination_file, 'wb') as f:
-            for chunk in r.iter_content(chunk_size=1024*1024):
+            for chunk in r.iter_content(block_size):
+                if progress_bar: progress_bar.update(len(chunk))
                 f.write(chunk)
 
-    def retrieve_asset(self, asset, destination_file = None):
+        if progress_bar: progress_bar.close()
+
+    def retrieve_asset(self, asset, destination_file = None, enable_progress_bar=True):
         if not self.__client.cache().enabled():
             assert destination_file is not None
             print("Download object: '%s'" % asset.url())
-            self.download_file(destination_file, asset.url())
+            self.__download_file(destination_file, asset.url(), enable_progress_bar)
             return destination_file
 
         cache = self.__client.cache().objects()
@@ -151,7 +160,7 @@ class ArtifactoryRequests:
         asset_path          = cache.asset_path(asset)
         temp_file           = asset_path + ".dwn"
 
-        self.download_file(temp_file, asset.url())
+        self.__download_file(temp_file, asset.url(), enable_progress_bar)
         cache.move_file(temp_file, asset_path)
         if destination_file is None:
             return asset_path
