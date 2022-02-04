@@ -1,11 +1,13 @@
 installs:
     - gavc_arg: dob2pe_sdk_gavc
+      root_prefix_arg: cross_os
       root_dir: platform_dob2pe_sdk
       specs:
         - platforms:platforms
         - tools:tools
 
     - gavc_arg: dob2pe_ipg_sdk_gavc
+      root_prefix_arg: cross_os
       root_dir: platform_dob2pe_sdk/platforms/charter_wb/ipg
       specs:
         - WB

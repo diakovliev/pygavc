@@ -26,8 +26,10 @@ class Installer:
 
             gavc = None
             if install.gavc_arg():
+                assert self.__build_config is not None, "Build config is not set!"
                 gavc = self.__build_config.get_arg(install.gavc_arg())
                 print(" -- arg: '%s' gavc: '%s'" % (install.gavc_arg(), gavc))
+                # assert gavc is not None, "Gavc got from the build config by arg '%s' is None!" % install.gavc_arg()
             else:
                 gavc = install.gavc()
                 print(" -- gavc: '%s'" % gavc)
@@ -38,8 +40,10 @@ class Installer:
 
             root_prefix = ""
             if install.root_prefix_arg():
+                assert self.__build_config is not None, "Build config is not set!"
                 root_prefix = self.__build_config.get_arg(install.root_prefix_arg())
                 print(" -- arg: '%s' root_prefix: '%s'" % (install.root_prefix_arg(), root_prefix))
+                assert root_prefix is not None, "Root prefix got from the build config by arg '%s' is None!" % install.root_prefix_arg()
 
             main_query  = Query.parse(gavc)
             print(" -- Main query: '%s'" % main_query)
