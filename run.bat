@@ -1,5 +1,7 @@
-@call %~dp0/python_env.bat
+@call %~dp0python_env.bat
 
-pip install -r requirements.txt
-rem pip freeze > requirements.txt
+pip install -r %~dp0requirements.txt
+rem pip freeze > %~dp0requirements.txt
 python %*
+
+exit

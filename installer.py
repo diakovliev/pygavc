@@ -21,19 +21,32 @@ class Installer:
         return versions[0]
 
 
-    def install(self):
+    def install(self, install_root):
         for install in self.__install_specs.installs():
+
             gavc = None
             if install.gavc_arg():
                 gavc = self.__build_config.get_arg(install.gavc_arg())
+                print(" -- arg: '%s' gavc: '%s'" % (install.gavc_arg(), gavc))
             else:
                 gavc = install.gavc()
+                print(" -- gavc: '%s'" % gavc)
 
-            assert gavc is not None
+            # assert gavc is not None
+            if not gavc:
+                continue
+
+            root_prefix = ""
+            if install.root_prefix_arg():
+                root_prefix = self.__build_config.get_arg(install.root_prefix_arg())
+                print(" -- arg: '%s' root_prefix: '%s'" % (install.root_prefix_arg(), root_prefix))
 
             main_query  = Query.parse(gavc)
             print(" -- Main query: '%s'" % main_query)
             print(" -- Root dir: '%s'" % install.root_dir())
+
+            element_install_root = os.path.join(install_root, root_prefix, install.root_dir())
+            print(" -- Element install root: '%s'" % element_install_root)
 
             res_version = self.__resolve_version(main_query)
             print(" -- Resolved version: '%s'" % res_version)
@@ -43,18 +56,20 @@ class Installer:
                 print(" --- Classifier: '%s'" % spec.classifier())
                 print(" --- Destination dir: '%s'" % spec.destination_dir())
 
+                destination_dir = os.path.join(element_install_root, spec.destination_dir())
+                print(" --- Final destination dir: '%s'" % destination_dir)
+
                 subquery = main_query.make_subquery(version=res_version, classifier=spec.classifier())
 
                 print(" --- Sub query: '%s'" % subquery)
 
-                if not os.path.isdir(spec.destination_dir()):
-                    os.makedirs(spec.destination_dir())
+                if not os.path.isdir(destination_dir):
+                    os.makedirs(destination_dir)
 
                 for asset in  self.__client.requests().assets_for(subquery):
                     cache_file = self.__client.requests().retrieve_asset(asset)
                     with zipfile.ZipFile(cache_file, 'r') as zip_ref:
-                        zip_ref.extractall(spec.destination_dir())
-
+                        zip_ref.extractall(destination_dir)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -88,7 +103,7 @@ def main():
 
     for specs_file in args.install_specs_file:
         print(" - Process '%s'" % specs_file)
-        Installer(InstallSpecs.load(specs_file, args.destination_dir), build_config).install()
+        Installer(InstallSpecs.load(specs_file), build_config).install(args.destination_dir)
 
 
 if __name__ == "__main__":
