@@ -3,11 +3,12 @@ import os
 from .parameters import GavcClientParamsHandler
 from .artifactory_requests_cache import ArtifactoryRequestsCache
 from .artifactory_objects_cache import ArtifactoryObjectsCache
-
+from .fs_utils import FsUtils
 
 class ArtifactoryCache:
     SUBROOT_DIR     = 'pygavc'
     OBJECTS_DIR     = "objects"
+    DOWNLOADS_DIR   = "dowloads"
     DATABASE_FILE   = 'requests.db'
 
     def __subelement_path(self, element_name = ""):
@@ -15,12 +16,17 @@ class ArtifactoryCache:
 
     def __init__(self, client):
         self.__client   = client
-        self.__root     = self.__subelement_path()
+        self.__root     = FsUtils.ensure_dir(self.__subelement_path())
 
-        if not os.path.isdir(self.__root): os.makedirs(self.__root)
+        self.__objects  = ArtifactoryObjectsCache(
+            os.path.join(self.__root, self.OBJECTS_DIR),
+            os.path.join(self.__root, self.DOWNLOADS_DIR),
+            int(client.get_param(GavcClientParamsHandler.CACHE_MAX_NO_ACCESS_ASSET_AGE))
+        ).initialize()
 
-        self.__objects  = ArtifactoryObjectsCache(os.path.join(self.__root, self.OBJECTS_DIR)).initialize()
-        self.__requests = ArtifactoryRequestsCache(os.path.join(self.__root, self.DATABASE_FILE)).initialize()
+        self.__requests = ArtifactoryRequestsCache(
+            os.path.join(self.__root, self.DATABASE_FILE)
+        ).initialize()
 
     def enabled(self):
         return True

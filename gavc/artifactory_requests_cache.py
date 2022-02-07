@@ -1,5 +1,6 @@
 import os
 import hashlib
+import sqlite3
 
 from .base_database import BaseDatabase
 
@@ -35,10 +36,10 @@ class RequestsDatabase(BaseDatabase):
             return None
 
     def ensure(self, key, text, query, data):
-        if self.text(key) is not None:
-            self.update(key, text, query, data)
-        else:
+        try:
             self.insert(key, text, query, data)
+        except sqlite3.IntegrityError:
+            self.update(key, text, query, data)
 
 
 class ArtifactoryRequestsCache:

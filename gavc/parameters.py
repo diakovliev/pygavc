@@ -61,15 +61,17 @@ class BaseParamsHandler:
 
 
 class GavcClientParamsHandler(BaseParamsHandler):
-    CACHE_PATH_PARAM        = 'cache-path'
-    FORCE_OFFLINE_PARAM     = 'force-offline'
+    CACHE_PATH_PARAM                    = 'cache-path'
+    CACHE_MAX_NO_ACCESS_ASSET_AGE       = 'cache-max-no-access-asset-age'
+    FORCE_OFFLINE_PARAM                 = 'force-offline'
 
     def __init__(self):
         BaseParamsHandler.__init__(self)
         default_cache_path = os.path.join(os.path.expanduser("~"), ".gavc")
         self._params.update({
-            GavcClientParamsHandler.CACHE_PATH_PARAM    : Param(env="GAVC_CACHE", value=default_cache_path),
-            GavcClientParamsHandler.FORCE_OFFLINE_PARAM : Param(env="GAVC_FORCE_OFFLINE")
+            GavcClientParamsHandler.CACHE_PATH_PARAM                : Param(env="GAVC_CACHE", value=default_cache_path),
+            GavcClientParamsHandler.CACHE_MAX_NO_ACCESS_ASSET_AGE   : Param(env="GAVC_CACHE_MAX_NO_ACCESS_ASSET_AGE", value="2678400"),
+            GavcClientParamsHandler.FORCE_OFFLINE_PARAM             : Param(env="GAVC_FORCE_OFFLINE")
         })
 
 

@@ -4,9 +4,9 @@ import zipfile
 
 from gavc.query import Query
 from gavc.artifactory_client import ArtifactoryClient
+from gavc.fs_utils import FsUtils
 from valhalla.install_specs import InstallSpecs
 from valhalla.build_config import BuildConfig
-
 
 class Installer:
     def __init__(self, install_specs, build_config = None):
@@ -22,6 +22,8 @@ class Installer:
 
 
     def install(self, install_root):
+        print(" - Install into '%s'" % install_root)
+
         for install in self.__install_specs.installs():
 
             gavc = None
@@ -66,14 +68,15 @@ class Installer:
                 subquery = main_query.make_subquery(version=res_version, classifier=spec.classifier())
 
                 print(" --- Sub query: '%s'" % subquery)
-
-                if not os.path.isdir(destination_dir):
-                    os.makedirs(destination_dir)
-
                 for asset in  self.__client.requests().assets_for(subquery):
-                    cache_file = self.__client.requests().retrieve_asset(asset)
-                    with zipfile.ZipFile(cache_file, 'r') as zip_ref:
-                        zip_ref.extractall(destination_dir)
+                    with self.__client.requests().retrieve_asset(asset) as cache_access_wrapper:
+                        with FsUtils.directory_lock(FsUtils.ensure_dir(destination_dir)):
+                            print(" --- Extract archive into: '%s'..." % destination_dir)
+                            with zipfile.ZipFile(cache_access_wrapper.path(), 'r') as zip_ref:
+                                zip_ref.extractall(destination_dir)
+
+        print(" - Clean objects cache")
+        self.__client.cache().objects().clean()
 
 def main():
     parser = argparse.ArgumentParser()
