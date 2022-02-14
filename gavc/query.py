@@ -3,7 +3,7 @@ import lark
 from .simple_query import SimpleQuery
 from .lark_utils import TreeHelper
 from .version import VersionData
-
+from .pom import Pom
 
 class Query:
     GRAMMAR = """
@@ -16,6 +16,8 @@ class Query:
         classifier: /[0-9a-zA-Z\.\-\_]+/
         extension: /[0-9a-zA-Z\_]+/
     """
+
+    MAVEN_METADATA_XML = "maven-metadata.xml"
 
     def __init__(self, group = None, name = None, version = None, classifiers = None):
         self.__group        = group
@@ -36,6 +38,12 @@ class Query:
         if "classifier" in kwargs:
             classifiers = [ (kwargs.get("classifier"), extension) ]
         return Query(group, name, version, classifiers)
+
+    def pom(self):
+        return Pom(self.__group, self.__name, str(self.__version))
+
+    def set_version(self, version):
+        self.__version = VersionData.parse(version)
 
     @staticmethod
     def parse(input_string):
@@ -87,14 +95,35 @@ class Query:
 
         return self.__group.replace('.', '/')
 
+    def artifact_path(self):
+        return "%s/%s" % (self.__group_path(), self.__name)
+
+    def version_path(self, version = None):
+        if version:
+            return "%s/%s" % (self.artifact_path(), version)
+        else:
+            assert self.__version is not None
+            return "%s/%s" % (self.artifact_path(), str(self.__version))
+
     def metadata_path(self):
-        return "%s/%s/%s" % (self.__group_path(), self.__name, "maven-metadata.xml")
+        return "%s/%s" % (self.artifact_path(), self.MAVEN_METADATA_XML)
+
+    def object_path(self, classifier, extension):
+        object_path = "%s/%s-%s" % (self.version_path(), self.__name, str(self.__version))
+        if classifier:
+            object_path += "-%s" % classifier
+        if extension:
+            object_path += ".%s" % extension
+        return object_path
+
+    def pom_path(self):
+        return self.object_path(None, "pom")
 
     def version(self):
         return self.__version
 
     def _aql_path(self):
-        return "%s/%s/*" % (self.__group_path(), self.__name )
+        return "%s/*" % self.artifact_path()
 
     def simple_queries_for(self, repo, version):
         if not self.__classifiers:

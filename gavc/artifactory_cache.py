@@ -15,6 +15,7 @@ class ArtifactoryCache:
         return os.path.join(self.__client.get_param(GavcClientParamsHandler.CACHE_PATH_PARAM), self.SUBROOT_DIR, element_name)
 
     def __init__(self, client):
+        self.__enabled  = True
         self.__client   = client
         self.__root     = FsUtils.ensure_dir(self.__subelement_path())
 
@@ -29,7 +30,16 @@ class ArtifactoryCache:
         ).initialize()
 
     def enabled(self):
-        return True
+        return self.__enabled
+
+    def set_enabled(self, enabled):
+        self.__enabled = enabled
+
+    def disable(self):
+        self.set_enabled(False)
+
+    def enable(self):
+        self.set_enabled(True)
 
     def objects(self):
         return self.__objects

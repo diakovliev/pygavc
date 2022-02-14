@@ -15,7 +15,7 @@ class InstallSpecsTest(unittest.TestCase):
         ]
 
         for filename in files:
-            InstallSpecs.load(os.path.join(TEST_DATA, filename), TEST_DATA)
+            InstallSpecs.load(os.path.join(TEST_DATA, filename))
 
 if __name__ == "__main__":
     unittest.main()

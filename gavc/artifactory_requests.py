@@ -11,19 +11,25 @@ from .file_downloader import FileDownloader
 from functional.bind import Bind
 
 class ArtifactoryRequests:
-    HTTP_OK = 200
+    HTTP_OK         = 200
+    HTTP_CREATED    = 201
+    HTTP_ACEPTED    = 202
 
     SOURCE_ORIGIN   = 'origin'
     SOURCE_CACHE    = 'cache'
 
 
-    class HttpError:
+    class Error(Exception):
+        def __init__(self, *args, **kwargs):
+            Exception.__init__(self, *args, **kwargs)
+
+    class HttpError(Error):
         def __init__(self, status_code):
+            ArtifactoryRequests.Error.__init__(self)
             self.__status_code = status_code
 
-    class Error:
-        def __init__(self, *args, **kwargs):
-            Exception.__init__(args, **kwargs)
+        def __str__(self):
+            return "Http error. Code '%d'." % self.__status_code
 
 
     def make_http_error(self, status_code):
@@ -48,6 +54,17 @@ class ArtifactoryRequests:
         """
         kwargs['headers'] = self.__client.headers()
         return self.session().get(query, **kwargs)
+
+
+    def put2(self, query, **kwargs):
+        """
+            HTTP put. Uncached version.
+        """
+        kwargs['headers'] = self.__client.headers()
+        r = self.session().put(query, **kwargs)
+        if r.status_code not in [ self.HTTP_OK, self.HTTP_CREATED, self.HTTP_ACEPTED ]:
+            raise self.make_http_error(r.status_code)
+        return r
 
 
     def post2(self, query, data, **kwargs):
@@ -110,7 +127,7 @@ class ArtifactoryRequests:
 
 
     def metadata_for(self, query):
-        metadata_url = self.__client.repository_metadata_url(query.metadata_path())
+        metadata_url = self.__client.repository_url(query.metadata_path())
         r = self.get(metadata_url, self.SOURCE_ORIGIN)
         if r.status_code != self.HTTP_OK:
             raise self.make_http_error(r.status_code)
@@ -124,8 +141,12 @@ class ArtifactoryRequests:
         return AqlResults.parse(r.text, self.__client.url())
 
 
+    def versions_for(self, query):
+        return self.metadata_for(query).versions_for(query)
+
+
     def assets_for(self, query):
-        for version in self.metadata_for(query).versions_for(query):
+        for version in self.versions_for(query):
             for sq in self.__client.simple_queries_for(query, version):
                 for asset in self.perform_aql(sq.to_aql_query()):
                     yield asset

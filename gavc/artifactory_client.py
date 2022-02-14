@@ -31,11 +31,11 @@ class ArtifactoryClient(GavcClientParamsHandler):
     def url(self):
         return self.get_param(BaseParamsHandler.SERVER_PARAM)
 
-    def repository_metadata_path(self, metadata_path):
-        return "%s/%s" % (self.repository(), metadata_path)
+    def repository_path(self, object_path):
+        return "%s/%s" % (self.repository(), object_path)
 
-    def repository_metadata_url(self, metadata_path):
-        return "%s/%s" % (self.url(), self.repository_metadata_path(metadata_path))
+    def repository_url(self, object_path):
+        return "%s/%s" % (self.url(), self.repository_path(object_path))
 
     def aql_url(self):
         return "%s/%s" % (self.url(), self.AQL_SUFFIX)
