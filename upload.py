@@ -1,6 +1,7 @@
 import argparse
 import hashlib
 import os
+import tqdm
 
 from gavc.artifactory_client import ArtifactoryClient
 from gavc.query import Query
@@ -60,7 +61,20 @@ class UploadObject:
     def __init__(self, client, query):
         self._client = client
         self._query = query
+        self.__progress_bar = None
         self._init_checksums()
+
+    def _init_progress_bar(self, total_size_in_bytes):
+        self.__progress_bar = tqdm.tqdm(total=total_size_in_bytes, unit='iB', unit_scale=True)
+
+    def update_progress_bar(self, chunk):
+        if self.__progress_bar:
+            self.__progress_bar.update(len(chunk))
+
+    def close_progress_bar(self):
+        if self.__progress_bar:
+            self.__progress_bar.close()
+        self.__progress_bar = None
 
     def _init_checksums(self):
         self.__checksums = {}
@@ -92,6 +106,8 @@ class FileToUpload(UploadObject):
         return self._client.repository_url(self._query.object_path(self.__spec.classifier, self.__spec.ext))
 
     def read(self):
+        s = os.stat(self.__spec.filepath)
+        self._init_progress_bar(s.st_size)
         self._init_checksums()
         with open(self.__spec.filepath, 'rb') as f:
             while True:
@@ -100,6 +116,8 @@ class FileToUpload(UploadObject):
                     break
                 self.update_checksums(chunk)
                 yield chunk
+                self.update_progress_bar(chunk)
+        self.close_progress_bar()
 
 
 ################################################################################
@@ -112,10 +130,13 @@ class PomToUpload(UploadObject):
         return self._client.repository_url(self._query.pom_path())
 
     def read(self):
-        self._init_checksums()
         chunk = self.__pom.tobytes()
+        self._init_progress_bar(len(chunk))
+        self._init_checksums()
         self.update_checksums(chunk)
         yield chunk
+        self.update_progress_bar(chunk)
+        self.close_progress_bar()
 
 
 ################################################################################

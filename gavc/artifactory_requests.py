@@ -18,6 +18,8 @@ class ArtifactoryRequests:
     SOURCE_ORIGIN   = 'origin'
     SOURCE_CACHE    = 'cache'
 
+    HTTP_METHOD_GET = 'GET'
+    HTTP_METHOD_POST= 'POST'
 
     class Error(Exception):
         def __init__(self, *args, **kwargs):
@@ -76,7 +78,7 @@ class ArtifactoryRequests:
         return self.session().post(query, **kwargs)
 
 
-    def __cached_request(self, cache_contains, cache_get, cache_update, request_get, primary_source = SOURCE_CACHE):
+    def __cached_request(self, cache_contains, cache_get, cache_update, request_get, primary_source = SOURCE_CACHE, method = HTTP_METHOD_GET):
         """
             HTTP get. Cached version.
         """
@@ -85,18 +87,18 @@ class ArtifactoryRequests:
 
         cache = self.__client.cache().requests()
         if primary_source == self.SOURCE_ORIGIN:
-            print("GET '%s' update cache" % request_get)
+            print(" - %s '%s' update cache" % (method, request_get))
             r = request_get()
             if r.status_code != self.HTTP_OK:
                 if not cache_contains():
                     return r
-                print("GET(cached) '%s' use cached result" % cache_get)
+                print(" - %s(cached) '%s' use cached result" % (method, cache_get))
                 return cache_get()
         elif primary_source == self.SOURCE_CACHE:
             if cache_contains():
-                print("GET(cached) '%s' use cached result" % cache_get)
+                print(" - %s(cached) '%s' use cached result" % (method, cache_get))
                 return cache_get()
-            print("GET '%s' update cache" % request_get)
+            print(" - %s '%s' update cache" % (method, request_get))
             r = request_get()
             if r.status_code != self.HTTP_OK:
                 return r
@@ -111,7 +113,8 @@ class ArtifactoryRequests:
             Bind(cache.get, query),
             Bind(cache.update_get, query),
             Bind(self.get2, query),
-            primary_source
+            primary_source,
+            self.HTTP_METHOD_GET
         )
 
 
@@ -122,7 +125,8 @@ class ArtifactoryRequests:
             Bind(cache.post, query, data),
             Bind(cache.update_post, query, data),
             Bind(self.post2, query, data),
-            primary_source
+            primary_source,
+            self.HTTP_METHOD_POST
         )
 
 
@@ -222,13 +226,13 @@ class ArtifactoryRequests:
 
         cache.update_access(asset)
         if destination_file is None:
-            print("Return cache object: '%s'" % asset.url())
+            print(" - Return cache object: '%s'" % asset.url())
             return self.CacheAssetAccessWrapper(cache.asset_path(asset), asset_lock)
 
         asset_lock.release()
 
         if cache.validate_destination(asset, destination_file):
-            print("Destination '%s' is actual" % destination_file)
+            print(" - Destination '%s' is actual" % destination_file)
             return self.DestinationFileAccessWrapper(destination_file)
 
         print("Extract cache object '%s' -> '%s'" % (asset.url(), destination_file))
@@ -239,7 +243,7 @@ class ArtifactoryRequests:
     def retrieve_asset(self, asset, destination_file = None, enable_progress_bar=True, attempt=0):
         if not self.__client.cache().enabled():
             assert destination_file is not None, "Requested direct download without destination_file!"
-            print("Direct download file '%s' -> '%s'" % (asset.url(), destination_file))
+            print(" - Direct download file '%s' -> '%s'" % (asset.url(), destination_file))
             self.__download_file(destination_file, asset.url(), enable_progress_bar)
             return destination_file
 
@@ -249,7 +253,7 @@ class ArtifactoryRequests:
         if result_path is not None:
             return result_path
 
-        print("Download asset '%s' into cache. Attempt %d" % (asset.url(), attempt))
+        print(" - Download asset '%s' into cache. Attempt %d" % (asset.url(), attempt))
         self.__download_asset(cache, asset, enable_progress_bar)
 
         result_path = self.__handle_cache(cache, asset, destination_file)
@@ -257,7 +261,7 @@ class ArtifactoryRequests:
             return result_path
 
         if attempt < self.__max_download_attempts:
-            print("No asset in cache, try to download it agait...")
+            print(" - No asset in cache, try to download it agait...")
             return self.retrieve_asset(asset, destination_file, enable_progress_bar, attempt+1)
 
         raise self.Error("Asset '%s' download error!" % asset.url())

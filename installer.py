@@ -1,6 +1,7 @@
 import os
 import argparse
 import zipfile
+import tqdm
 
 from gavc.query import Query
 from gavc.artifactory_client import ArtifactoryClient
@@ -73,7 +74,9 @@ class Installer:
                         with FsUtils.directory_lock(FsUtils.ensure_dir(destination_dir)):
                             print(" --- Extract archive into: '%s'..." % destination_dir)
                             with zipfile.ZipFile(cache_access_wrapper.path(), 'r') as zip_ref:
-                                zip_ref.extractall(destination_dir)
+                                for archive_file in tqdm.tqdm(iterable=zip_ref.namelist(), total=len(zip_ref.namelist())):
+                                    zip_ref.extract(member=archive_file, path=destination_dir)
+
 
         print(" - Clean objects cache")
         self.__client.cache().objects().clean()
