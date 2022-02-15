@@ -1,4 +1,5 @@
 import json
+import lark
 from lark import Lark, Transformer
 
 class AqlObject:
@@ -66,7 +67,9 @@ class AqlResults:
         try:
             tree = Lark(AqlResults.GRAMMAR, parser='lalr', start='value').parse(input_string)
             aql_results = _AqlResultsTransformer().transform(tree)
-            return [AqlObject(dict(obj, server = server_url)) for obj in aql_results["results"]]
+            return [ AqlObject(dict(obj, server = server_url)) for obj in aql_results["results"] ]
+        except TypeError:
+            return None
         except lark.exceptions.UnexpectedToken:
             return None
 
@@ -97,29 +100,47 @@ class SimpleQuery:
         self.__classifier   = classifier
         self.__extension    = extension
 
-    def __aql_name_condition(self):
+    def __aql_name_condition(self, root_elements = False):
+        append_star = not self.__classifier or not self.__extension
+        name = "%s-%s" % (self.__name, self.__version)
 
-        base = "%s-%s" % (self.__name, self.__version)
         if self.__classifier:
-            name = "%s-%s" % (base, self.__classifier)
-            if self.__extension:
-                name = "%s.%s" % (name, self.__extension)
-            else:
-                name = "%s.*" % name
-        else:
-            name = "%s-*" % (base)
+            name = "%s-%s" % (name, self.__classifier)
+
+        if self.__extension:
+            name = "%s.%s" % (name, self.__extension)
+            append_star = False
+
+        if append_star and root_elements:
+            name = "%s.*" % name
+        elif append_star and not root_elements:
+            name = "%s-*" % name
 
         return { "$match": name }
 
     def __aql_cond(self):
         aql = {
-            "$and": [
-                { "repo": self.__repo },
-                { "path": {
-                        "$match": self.__parent._aql_path(),
-                    }
+            "$or": [
+                {
+                    "$and": [
+                        { "repo": self.__repo },
+                        { "path": {
+                                "$match": self.__parent._aql_path(),
+                            }
+                        },
+                        { "name": self.__aql_name_condition(True) }
+                    ]
                 },
-                { "name": self.__aql_name_condition() }
+                {
+                    "$and": [
+                        { "repo": self.__repo },
+                        { "path": {
+                                "$match": self.__parent._aql_path(),
+                            }
+                        },
+                        { "name": self.__aql_name_condition(False) }
+                    ]
+                },
             ]
         }
         return json.dumps(aql)

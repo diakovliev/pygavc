@@ -1,44 +1,48 @@
+import argparse
 import os
 import shutil
 
 from gavc.query import Query
 from gavc.artifactory_client import ArtifactoryClient
 
+################################################################################
 class Downloader:
-
     def __init__(self, client):
         self.__client = client
 
-    def perform(self, query):
-
-        directory = "./request_downloads"
-        try:
-            shutil.rmtree(directory)
-        except OSError as e:
-            pass
-
-        try:
-            os.mkdir(directory)
-        except OSError as e:
-            print("Error: %s : %s" % (directory, e.strerror))
-            return None
-
+    def perform(self, query, output):
         for asset in  self.__client.requests().assets_for(query):
-
-            destination_file = os.path.join(directory, asset.name())
-
+            destination_file = output if output else os.path.join(os.getcwd(), asset.name())
             self.__client.requests().retrieve_asset(asset, destination_file)
 
-
+################################################################################
 def main():
 
-    d = Downloader(ArtifactoryClient())
+    parser = argparse.ArgumentParser()
 
-    q = Query.parse("entone.sdk.release:mipsel_linux:*[20,22]:oemsdk_release@zip,oemsdk_debug@zip")
-    d.perform(q)
+    parser.add_argument(
+        "--output",
+        action="store",
+        help="Output file."
+    )
 
-    q = Query.parse("charter.worldbox11.oemsdk.release:humaxwb11:15.4.+")
-    d.perform(q)
+    parser.add_argument(
+        "target",
+        nargs=1,
+        help="Gavc target."
+    )
 
+    args = parser.parse_args()
+
+    print(" - Gavc: %s" % args.target)
+    print(" - Output: %s" % args.output)
+
+    downloader = Downloader(ArtifactoryClient())
+
+    query = Query.parse(args.target[0])
+
+    downloader.perform(query, args.output)
+
+################################################################################
 if __name__ == "__main__":
     main()

@@ -70,7 +70,7 @@ class ArtifactoryObjectsCache:
         with self.asset_lock(asset):
             if not os.path.isfile(destination_path):
                 return False
-            return filecmp.cpm(self.asset_path(asset), destination_path, False)
+            return filecmp.cmp(self.asset_path(asset), destination_path, False)
 
     def commit_asset(self, asset):
         destination_path    = self.asset_path(asset)

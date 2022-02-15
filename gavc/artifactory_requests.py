@@ -152,7 +152,10 @@ class ArtifactoryRequests:
     def assets_for(self, query):
         for version in self.versions_for(query):
             for sq in self.__client.simple_queries_for(query, version):
-                for asset in self.perform_aql(sq.to_aql_query()):
+                assets = self.perform_aql(sq.to_aql_query())
+                if not assets:
+                    return
+                for asset in assets:
                     yield asset
 
 

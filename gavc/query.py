@@ -7,12 +7,12 @@ from .pom import Pom
 
 class Query:
     GRAMMAR = """
-        start: group ":" name ( ":" version ( ":" cel )? )?
+        start: group ":" name ( ":" version ( ":" cel? )? )?
+        ce: ( classifier ( "@" extension )? ) | ( "@" extension ) ","?
+        cel: ce+
         group: /[0-9a-zA-Z\.\-\_]+/
         name: /[0-9a-zA-Z\_]+/
         version:  /[0-9a-zA-Z\.\-\_\*\+\[\]\(\)\,]+/
-        ce: classifier ( "@" extension)? ","?
-        cel: ce+
         classifier: /[0-9a-zA-Z\.\-\_]+/
         extension: /[0-9a-zA-Z\_]+/
     """
@@ -63,7 +63,11 @@ class Query:
 
         self.__classifiers = list()
         for ce in tree.tree_by_path("cel").children():
-            classifier = ce.tree_by_path("classifier").first_value()
+            classifier_tree = ce.tree_by_path("classifier")
+            if classifier_tree:
+                classifier = classifier_tree.first_value()
+            else:
+                classifier = None
             ext_tree = ce.tree_by_path("extension")
             if ext_tree:
                 extension = ext_tree.first_value()
@@ -126,10 +130,11 @@ class Query:
         return "%s/*" % self.artifact_path()
 
     def simple_queries_for(self, repo, version):
-        if not self.__classifiers:
-            return ( SimpleQuery(self, repo, self.__group, self.__name, version), )
+        if self.__classifiers:
+            for classifier, extension in self.__classifiers:
+                yield SimpleQuery(self, repo, self.__group, self.__name, version, classifier, extension)
         else:
-            return ( SimpleQuery(self, repo, self.__group, self.__name, version, classifier[0], classifier[1]) for classifier in self.__classifiers )
+            yield SimpleQuery(self, repo, self.__group, self.__name, version)
 
 
 if __name__ == "__main__":
