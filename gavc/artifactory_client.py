@@ -55,5 +55,5 @@ class ArtifactoryClient(GavcClientParamsHandler):
     def cache(self):
         return self.__cache
 
-    def simple_queries_for(self, query, version):
-        return query.simple_queries_for(self.repository(), version)
+    def resolved_queries_for(self, query, version):
+        return query.resolved_queries_for(self.repository(), version)

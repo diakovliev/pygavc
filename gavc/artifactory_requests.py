@@ -5,7 +5,7 @@ import time
 import filelock
 
 from .metadata import Metadata
-from .simple_query import AqlResults
+from .aql import AqlResults
 from .file_downloader import FileDownloader
 
 from functional.bind import Bind
@@ -151,7 +151,7 @@ class ArtifactoryRequests:
 
     def assets_for(self, query):
         for version in self.versions_for(query):
-            for sq in self.__client.simple_queries_for(query, version):
+            for sq in self.__client.resolved_queries_for(query, version):
                 assets = self.perform_aql(sq.to_aql_query())
                 if not assets:
                     return

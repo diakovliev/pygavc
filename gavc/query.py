@@ -1,6 +1,6 @@
 import lark
 
-from .simple_query import SimpleQuery
+from .resolved_query import ResolvedQuery
 from .lark_utils import TreeHelper
 from .version import VersionData
 from .pom import Pom
@@ -129,12 +129,12 @@ class Query:
     def _aql_path(self):
         return "%s/*" % self.artifact_path()
 
-    def simple_queries_for(self, repo, version):
+    def resolved_queries_for(self, repo, version):
         if self.__classifiers:
             for classifier, extension in self.__classifiers:
-                yield SimpleQuery(self, repo, self.__group, self.__name, version, classifier, extension)
+                yield ResolvedQuery(self, repo, self.__group, self.__name, version, classifier, extension)
         else:
-            yield SimpleQuery(self, repo, self.__group, self.__name, version)
+            yield ResolvedQuery(self, repo, self.__group, self.__name, version)
 
 
 if __name__ == "__main__":
