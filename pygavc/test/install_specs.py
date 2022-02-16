@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from valhalla.install_specs import InstallSpecs
+from ..valhalla.install_specs import InstallSpecs
 
 TEST_DATA = os.path.join(os.path.abspath(os.path.join(__file__, os.pardir)), "data", os.path.basename(__file__))
 

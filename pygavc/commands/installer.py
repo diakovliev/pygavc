@@ -1,14 +1,16 @@
 import os
-import argparse
 import zipfile
 import tqdm
 
-from gavc.query import Query
-from gavc.artifactory_client import ArtifactoryClient
-from gavc.fs_utils import FsUtils
-from valhalla.install_specs import InstallSpecs
-from valhalla.build_config import BuildConfig
+from ..gavc.query import Query
+from ..gavc.artifactory_client import ArtifactoryClient
+from ..gavc.fs_utils import FsUtils
+from ..valhalla.install_specs import InstallSpecs
+from ..valhalla.build_config import BuildConfig
 
+
+
+################################################################################
 class Installer:
     def __init__(self, install_specs, build_config = None):
         self.__install_specs    = install_specs
@@ -22,7 +24,7 @@ class Installer:
         return versions[0]
 
 
-    def install(self, install_root):
+    def __call__(self, install_root):
         print(" - Install into '%s'" % install_root)
 
         for install in self.__install_specs.installs():
@@ -80,41 +82,3 @@ class Installer:
 
         print(" - Clean objects cache")
         self.__client.cache().objects().clean()
-
-def main():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "--install_specs_file",
-        required=True,
-        action="append",
-        help="Install specs file(s) to process.",
-    )
-
-    parser.add_argument(
-        "--destination_dir",
-        required=True,
-        action="store",
-        help="Install destination directory.",
-    )
-
-    parser.add_argument(
-        "--build_config_file",
-        action="store",
-        help="Valhalla target configuration file.",
-    )
-
-    args = parser.parse_args()
-
-    build_config = None
-    if args.build_config_file:
-        print(" - Load '%s'" % args.build_config_file)
-        build_config = BuildConfig.load(args.build_config_file)
-
-    for specs_file in args.install_specs_file:
-        print(" - Process '%s'" % specs_file)
-        Installer(InstallSpecs.load(specs_file), build_config).install(args.destination_dir)
-
-
-if __name__ == "__main__":
-    main()

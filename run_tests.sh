@@ -1,8 +1,8 @@
 #! /bin/sh
 (set -o igncr) 2>/dev/null && set -o igncr; # cygwin compatibility, this comment is required, don't put anything except comments (even empty lines) before this line
 
-pip install -r requirements.txt
-# pip freeze > requirements.txt
+pip install -r tools/requirements.txt
+# pip freeze > tools/requirements.txt
 
 TESTS=$(cat<<EOF
 test.build_config
@@ -19,5 +19,5 @@ EOF
 set -e
 
 for t in ${TESTS}; do
-	python -m ${t} -v
+	python -m pygavc.${t} -v
 done

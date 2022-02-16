@@ -1,7 +1,7 @@
 import unittest
 
-from gavc.versions_filter import VersionsFilter
-from gavc.version import VersionData
+from ..gavc.versions_filter import VersionsFilter
+from ..gavc.version import VersionData
 
 class VersionsFilterTests(unittest.TestCase):
 

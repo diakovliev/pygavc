@@ -1,9 +1,9 @@
 import unittest
 
-from gavc.version import Op
-from gavc.version import Range
-from gavc.version import Version
-from gavc.version import VersionData
+from ..gavc.version import Op
+from ..gavc.version import Range
+from ..gavc.version import Version
+from ..gavc.version import VersionData
 
 
 class VersionTests(unittest.TestCase):

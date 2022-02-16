@@ -1,10 +1,10 @@
 import unittest
 
-from gavc.versions_comparator import VersionsComparator
-from gavc.sparts_table_comparator import SPartsTableElement
-from gavc.sparts_table_comparator import SpartsTableComparator
-from gavc.version import VersionData
-from gavc.version import Op
+from ..gavc.versions_comparator import VersionsComparator
+from ..gavc.sparts_table_comparator import SPartsTableElement
+from ..gavc.sparts_table_comparator import SpartsTableComparator
+from ..gavc.version import VersionData
+from ..gavc.version import Op
 
 class SPartsTableComparatorTests(unittest.TestCase):
 

@@ -1,7 +1,7 @@
 import unittest
 
-from gavc.versions_comparator import VersionsComparator
-from gavc.version import VersionData
+from ..gavc.versions_comparator import VersionsComparator
+from ..gavc.version import VersionData
 
 class VersionsComparatorTests(unittest.TestCase):
 

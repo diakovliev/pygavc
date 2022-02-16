@@ -3,6 +3,8 @@
 
 cdir=$(dirname $0)
 
-pip3 install -r ${cdir}/requirements.txt --user
-# pip3 freeze > ${cdir}/requirements.txt
+export PYTHONPATH=${PYTHONPATH}:${cdir}
+
+pip3 install -r ${cdir}/tools/requirements.txt --user
+# pip3 freeze > ${cdir}/tools/requirements.txt
 python3 $@

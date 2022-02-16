@@ -1,14 +1,11 @@
-import argparse
 import hashlib
 import os
 import tqdm
 
-from gavc.artifactory_client import ArtifactoryClient
-from gavc.query import Query
-from gavc.pom import Pom
+
 
 ################################################################################
-class UploadSpec:
+class Spec:
     SEPA    = ':'
     EXT     = '.'
 
@@ -37,18 +34,20 @@ class UploadSpec:
         classifier  = ""
         ext         = ""
         filepath    = ""
-        assert UploadSpec.SEPA in input_string
-        parts = input_string.split(UploadSpec.SEPA, 1)
+        assert Spec.SEPA in input_string
+        parts = input_string.split(Spec.SEPA, 1)
         classifier  = parts[0]
         filepath    = parts[1]
-        if UploadSpec.EXT in classifier:
-            parts = classifier.split(UploadSpec.EXT, 1)
+        if Spec.EXT in classifier:
+            parts = classifier.split(Spec.EXT, 1)
             classifier  = parts[0]
             ext         = parts[1]
         if not ext:
             ext         = os.path.splitext(filepath)
             if ext: ext = ext[1][1:]
-        return UploadSpec(classifier, ext, filepath)
+        return Spec(classifier, ext, filepath)
+
+
 
 ################################################################################
 class UploadObject:
@@ -94,8 +93,9 @@ class UploadObject:
             yield name
 
 
+
 ################################################################################
-class FileToUpload(UploadObject):
+class UploadFile(UploadObject):
     __CHUNK_SIZE = 1 * 1024 * 1024
 
     def __init__(self, client, query, upload_spec):
@@ -120,8 +120,9 @@ class FileToUpload(UploadObject):
         self.close_progress_bar()
 
 
+
 ################################################################################
-class PomToUpload(UploadObject):
+class UploadPom(UploadObject):
     def __init__(self, client, query, pom):
         UploadObject.__init__(self, client, query)
         self.__pom = pom
@@ -137,69 +138,3 @@ class PomToUpload(UploadObject):
         yield chunk
         self.update_progress_bar(chunk)
         self.close_progress_bar()
-
-
-################################################################################
-def main():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "--upload",
-        required=True,
-        action="append",
-        help="List of files to upload (required). Expected format is: <classifier>[.<ext>]:<filepath>"
-    )
-
-    parser.add_argument(
-        "target",
-        nargs=1,
-        help="Gavc target."
-    )
-
-    args = parser.parse_args()
-
-    print(" - Uploads: %s" % repr(args.upload))
-    print(" - Gavc: %s" % repr(args.target))
-
-    q = Query.parse(args.target[0])
-
-    if q.version() is None or not q.version().is_single_version():
-        raise Exception("Gavc target '%s' is not a single version target!" % args.target[0])
-
-    print(" - Artifact path: %s" % q.artifact_path())
-
-    client = ArtifactoryClient()
-    client.cache().disable()
-
-    versions    = []
-    if not q.version().is_const():
-        versions.extend(client.requests().versions_for(q))
-    else:
-        versions.append(str(q.version()))
-
-    if len(versions) != 1:
-        raise Exception("Can't resolve version for upload target '%s'!" % args.target[0])
-
-    q.set_version(versions[0])
-
-    print(" - Version url: %s" % client.repository_url(q.version_path()))
-
-    uploads = []
-    for upload_spec in args.upload:
-        print(" - Parse upload spec: %s" % upload_spec)
-        uploads.append(FileToUpload(client, q, UploadSpec.parse(upload_spec)))
-    uploads.append(PomToUpload(client, q, q.pom()))
-
-    for o2u in uploads:
-        url = o2u.url()
-        print(" - Upload: %s" % url)
-        client.requests().put2(url, data=o2u.read())
-        for summ in o2u.all_summs():
-            url_summ = url + "." + summ
-            summ_value = o2u.get_summ(summ)
-            print(" - Upload %s: %s <= %s" % (summ, url_summ, summ_value))
-            client.requests().put2(url_summ, data=summ_value)
-
-################################################################################
-if __name__ == "__main__":
-    main()

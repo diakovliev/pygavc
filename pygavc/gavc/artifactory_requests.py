@@ -8,7 +8,7 @@ from .metadata import Metadata
 from .aql import AqlResults
 from .file_downloader import FileDownloader
 
-from functional.bind import Bind
+from ..functional.bind import Bind
 
 class ArtifactoryRequests:
     HTTP_OK         = 200

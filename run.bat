@@ -1,6 +1,8 @@
 ::!/cmd
-@call %~dp0python_env.bat
+@call %~dp0\tools\python_env.bat
 
-@start /b /wait pip install -r %~dp0requirements.txt
-@rem start /b /wait pip freeze > %~dp0requirements.txt
+@set PYTHONPATH=%PYTHONPATH%;%~dp0
+
+@start /b /wait pip install -r %~dp0tools\requirements.txt
+@rem start /b /wait pip freeze > %~dp0tools\requirements.txt
 @start /b /wait python %*
