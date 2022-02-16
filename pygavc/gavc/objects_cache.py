@@ -8,7 +8,7 @@ import yaml
 
 from .fs_utils import FsUtils
 
-class ArtifactoryObjectsCache:
+class ObjectsCache:
 
     LOCK_SFX = ".lock"
     PROPS_SFX = ".yaml"
@@ -31,8 +31,14 @@ class ArtifactoryObjectsCache:
     def downloads_root(self):
         return self.__downloads_root
 
-    def __asset_subpath(self, asset):
+    def __asset_checksum(self, asset):
         checksum = asset.sha1()
+        assert checksum
+        assert len(checksum) > 4
+        return checksum
+
+    def __asset_subpath(self, asset):
+        checksum = self.__asset_checksum(asset)
         p0 = checksum[:2]
         p1 = checksum[2:4]
         p2 = checksum[4:]
@@ -42,7 +48,8 @@ class ArtifactoryObjectsCache:
         return os.path.join(self.storage_root(), self.__asset_subpath(asset))
 
     def dwn_path(self, asset):
-        return os.path.join(self.downloads_root(), asset.sha1())
+        checksum = self.__asset_checksum(asset)
+        return os.path.join(self.downloads_root(), checksum)
 
     def props_path(self, asset):
         return self.asset_path(asset) + self.PROPS_SFX
@@ -93,6 +100,7 @@ class ArtifactoryObjectsCache:
         assert self.ACCESS_TIME in props
         return datetime.datetime.strptime(props[self.ACCESS_TIME], self.DATETIME_FMT)
 
+
     def update_access(self, asset):
         now     = datetime.datetime.utcnow()
         strtime = datetime.datetime.strftime(now, self.DATETIME_FMT)
@@ -100,6 +108,7 @@ class ArtifactoryObjectsCache:
         with open(self.props_path(asset) + self.TEMP_SFX, 'w') as f:
             yaml.dump(props, f)
         shutil.move(self.props_path(asset) + self.TEMP_SFX, self.props_path(asset))
+
 
     def clean(self):
         clean_table = {}

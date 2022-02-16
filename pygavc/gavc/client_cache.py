@@ -1,11 +1,11 @@
 import os
 
 from .parameters import GavcClientParamsHandler
-from .artifactory_requests_cache import ArtifactoryRequestsCache
-from .artifactory_objects_cache import ArtifactoryObjectsCache
+from .requests_cache import RequestsCache
+from .objects_cache import ObjectsCache
 from .fs_utils import FsUtils
 
-class ArtifactoryCache:
+class ClientCache:
     SUBROOT_DIR     = 'pygavc'
     OBJECTS_DIR     = "objects"
     DOWNLOADS_DIR   = "dowloads"
@@ -19,13 +19,13 @@ class ArtifactoryCache:
         self.__client   = client
         self.__root     = FsUtils.ensure_dir(self.__subelement_path())
 
-        self.__objects  = ArtifactoryObjectsCache(
+        self.__objects  = ObjectsCache(
             os.path.join(self.__root, self.OBJECTS_DIR),
             os.path.join(self.__root, self.DOWNLOADS_DIR),
             int(client.get_param(GavcClientParamsHandler.CACHE_MAX_NO_ACCESS_ASSET_AGE))
         ).initialize()
 
-        self.__requests = ArtifactoryRequestsCache(
+        self.__requests = RequestsCache(
             os.path.join(self.__root, self.DATABASE_FILE)
         ).initialize()
 

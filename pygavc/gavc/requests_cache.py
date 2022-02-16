@@ -3,6 +3,7 @@ import hashlib
 import sqlite3
 
 from .base_database import BaseDatabase
+from .requests import Requests
 
 class RequestsDatabase(BaseDatabase):
     CREATE_TABLES = """
@@ -42,10 +43,9 @@ class RequestsDatabase(BaseDatabase):
             self.update(key, text, query, data)
 
 
-class ArtifactoryRequestsCache:
+class RequestsCache:
     ENCODING        = 'utf-8'
     SUBROOT_DIR     = 'pygavc'
-    HTTP_OK_CODE    = 200
 
     class Result:
         def __init__(self, status_code, text):
@@ -70,7 +70,7 @@ class ArtifactoryRequestsCache:
 
     def post(self, query, data):
         cache_key = self.__db_key(query, data)
-        return self.Result(self.HTTP_OK_CODE, self.__db.text(cache_key))
+        return self.Result(Requests.HTTP_OK_CODE, self.__db.text(cache_key))
 
     def contains_get(self, query):
         return self.contains_post(query, None)

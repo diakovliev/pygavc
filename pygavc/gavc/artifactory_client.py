@@ -2,8 +2,8 @@ import os
 
 from .parameters import BaseParamsHandler
 from .parameters import GavcClientParamsHandler
+from .client_cache import ClientCache
 from .artifactory_requests import ArtifactoryRequests
-from .artifactory_cache import ArtifactoryCache
 
 
 class ArtifactoryClient(GavcClientParamsHandler):
@@ -24,7 +24,7 @@ class ArtifactoryClient(GavcClientParamsHandler):
 
     def __init__(self):
         GavcClientParamsHandler.__init__(self)
-        self.__cache = ArtifactoryCache(self)
+        self.__cache = ClientCache(self)
         self.__make_headers()
         self.__make_requests()
 

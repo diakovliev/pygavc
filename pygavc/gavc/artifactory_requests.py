@@ -7,131 +7,22 @@ import filelock
 from .metadata import Metadata
 from .aql import AqlResults
 from .file_downloader import FileDownloader
+from .cached_requests import CachedRequests
 
 from ..functional.bind import Bind
 
-class ArtifactoryRequests:
-    HTTP_OK         = 200
-    HTTP_CREATED    = 201
-    HTTP_ACEPTED    = 202
+################################################################################
+class ArtifactoryRequests(CachedRequests):
 
-    SOURCE_ORIGIN   = 'origin'
-    SOURCE_CACHE    = 'cache'
-
-    HTTP_METHOD_GET = 'GET'
-    HTTP_METHOD_POST= 'POST'
-
-    class Error(Exception):
-        def __init__(self, *args, **kwargs):
-            Exception.__init__(self, *args, **kwargs)
-
-    class HttpError(Error):
-        def __init__(self, status_code):
-            ArtifactoryRequests.Error.__init__(self)
-            self.__status_code = status_code
-
-        def __str__(self):
-            return "Http error. Code '%d'." % self.__status_code
-
-
-    def make_http_error(self, status_code):
-        return self.HttpError(status_code)
-
+    DEF_MAX_DOWNLOAD_ATTEMPTS = 5
 
     def __init__(self, client):
-        self.__client                   = client
-        self.__session                  = None
-        self.__max_download_attempts    = 5
-
-
-    def session(self):
-        if not self.__session:
-            self.__session = requests.Session()
-        return self.__session
-
-
-    def get2(self, query, **kwargs):
-        """
-            HTTP get. Uncached version.
-        """
-        kwargs['headers'] = self.__client.headers()
-        return self.session().get(query, **kwargs)
-
-
-    def put2(self, query, **kwargs):
-        """
-            HTTP put. Uncached version.
-        """
-        kwargs['headers'] = self.__client.headers()
-        r = self.session().put(query, **kwargs)
-        if r.status_code not in [ self.HTTP_OK, self.HTTP_CREATED, self.HTTP_ACEPTED ]:
-            raise self.make_http_error(r.status_code)
-        return r
-
-
-    def post2(self, query, data, **kwargs):
-        """
-            HTTP post. Uncached version.
-        """
-        kwargs['headers'] = self.__client.headers()
-        kwargs['data'] = data
-        return self.session().post(query, **kwargs)
-
-
-    def __cached_request(self, cache_contains, cache_get, cache_update, request_get, primary_source = SOURCE_CACHE, method = HTTP_METHOD_GET):
-        """
-            HTTP get. Cached version.
-        """
-        if not self.__client.cache().enabled():
-            return request_get()
-
-        cache = self.__client.cache().requests()
-        if primary_source == self.SOURCE_ORIGIN:
-            print(" - %s '%s' update cache" % (method, request_get))
-            r = request_get()
-            if r.status_code != self.HTTP_OK:
-                if not cache_contains():
-                    return r
-                print(" - %s(cached) '%s' use cached result" % (method, cache_get))
-                return cache_get()
-        elif primary_source == self.SOURCE_CACHE:
-            if cache_contains():
-                print(" - %s(cached) '%s' use cached result" % (method, cache_get))
-                return cache_get()
-            print(" - %s '%s' update cache" % (method, request_get))
-            r = request_get()
-            if r.status_code != self.HTTP_OK:
-                return r
-
-        return cache_update(r)
-
-
-    def get(self, query, primary_source = SOURCE_CACHE):
-        cache = self.__client.cache().requests()
-        return self.__cached_request(
-            Bind(cache.contains_get, query),
-            Bind(cache.get, query),
-            Bind(cache.update_get, query),
-            Bind(self.get2, query),
-            primary_source,
-            self.HTTP_METHOD_GET
-        )
-
-
-    def post(self, query, data, primary_source = SOURCE_CACHE):
-        cache = self.__client.cache().requests()
-        return self.__cached_request(
-            Bind(cache.contains_post, query, data),
-            Bind(cache.post, query, data),
-            Bind(cache.update_post, query, data),
-            Bind(self.post2, query, data),
-            primary_source,
-            self.HTTP_METHOD_POST
-        )
+        CachedRequests.__init__(self, client)
+        self.__max_download_attempts = self.DEF_MAX_DOWNLOAD_ATTEMPTS
 
 
     def metadata_for(self, query):
-        metadata_url = self.__client.repository_url(query.metadata_path())
+        metadata_url = self.client().repository_url(query.metadata_path())
         r = self.get(metadata_url, self.SOURCE_ORIGIN)
         if r.status_code != self.HTTP_OK:
             raise self.make_http_error(r.status_code)
@@ -139,10 +30,10 @@ class ArtifactoryRequests:
 
 
     def perform_aql(self, aql):
-        r = self.post(self.__client.aql_url(), aql, self.SOURCE_ORIGIN)
+        r = self.post(self.client().aql_url(), aql, self.SOURCE_ORIGIN)
         if r.status_code != self.HTTP_OK:
             raise self.make_http_error(r.status_code)
-        return AqlResults.parse(r.text, self.__client.url())
+        return AqlResults.parse(r.text, self.client().url())
 
 
     def versions_for(self, query):
@@ -151,7 +42,7 @@ class ArtifactoryRequests:
 
     def assets_for(self, query):
         for version in self.versions_for(query):
-            for sq in self.__client.resolved_queries_for(query, version):
+            for sq in self.client().resolved_queries_for(query, version):
                 assets = self.perform_aql(sq.to_aql_query())
                 if not assets:
                     return
@@ -244,13 +135,13 @@ class ArtifactoryRequests:
 
 
     def retrieve_asset(self, asset, destination_file = None, enable_progress_bar=True, attempt=0):
-        if not self.__client.cache().enabled():
+        if not self.client().cache().enabled():
             assert destination_file is not None, "Requested direct download without destination_file!"
             print(" - Direct download file '%s' -> '%s'" % (asset.url(), destination_file))
             self.__download_file(destination_file, asset.url(), enable_progress_bar)
             return destination_file
 
-        cache = self.__client.cache().objects()
+        cache = self.client().cache().objects()
 
         result_path = self.__handle_cache(cache, asset, destination_file)
         if result_path is not None:
