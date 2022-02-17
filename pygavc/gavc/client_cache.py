@@ -1,6 +1,6 @@
 import os
 
-from .parameters import GavcClientParamsHandler
+from .gavc_parameters import GavcClientParamsHandler
 from .requests_cache import RequestsCache
 from .objects_cache import ObjectsCache
 from .fs_utils import FsUtils

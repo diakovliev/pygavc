@@ -1,7 +1,6 @@
 import os
 
-from .parameters import BaseParamsHandler
-from .parameters import GavcClientParamsHandler
+from .gavc_parameters import GavcClientBaseParamsHandler, GavcClientParamsHandler
 from .client_cache import ClientCache
 from .artifactory_requests import ArtifactoryRequests
 
@@ -27,9 +26,10 @@ class ArtifactoryClient(GavcClientParamsHandler):
         self.__cache = ClientCache(self)
         self.__make_headers()
         self.__make_requests()
+        self.print_all_params(" - Artifactory client parameters:")
 
     def url(self):
-        return self.get_param(BaseParamsHandler.SERVER_PARAM)
+        return self.get_param(GavcClientBaseParamsHandler.SERVER_PARAM)
 
     def repository_path(self, object_path):
         return "%s/%s" % (self.repository(), object_path)
@@ -41,10 +41,10 @@ class ArtifactoryClient(GavcClientParamsHandler):
         return "%s/%s" % (self.url(), self.AQL_SUFFIX)
 
     def repository(self):
-        return self.get_param(BaseParamsHandler.REPOSITORY_PARAM)
+        return self.get_param(GavcClientBaseParamsHandler.REPOSITORY_PARAM)
 
     def token(self):
-        return self.get_param(BaseParamsHandler.TOKEN_PARAM)
+        return self.get_param(GavcClientBaseParamsHandler.TOKEN_PARAM)
 
     def headers(self):
         return self.__headers
