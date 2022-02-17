@@ -6,14 +6,16 @@ class GavcClientBaseParamsHandler(BaseParamsHandler):
     SERVER_PARAM        = 'server'
     REPOSITORY_PARAM    = 'repository'
 
-    DEFAULT_GAVC_SERVER_URL         = "https://artifactory.developonbox.ru/artifactory"
-    DEFAULT_GAVC_SERVER_REPOSITORY  = "bin-release-local"
+    DEFAULT_GAVC_SERVER_URL                 = "https://artifactory.developonbox.ru/artifactory"
+    DEFAULT_GAVC_SERVER_REPOSITORY          = "bin-release-local"
+    DEFAULT_GAVC_SERVER_API_ACCESS_TOKEN    = "<invalid token>"
 
     def __init__(self):
         BaseParamsHandler.__init__(self)
         self._add_parameter(GavcClientBaseParamsHandler.TOKEN_PARAM, [
             self._ValueSourceEnv("GAVC_SERVER_API_ACCESS_TOKEN"),
             self._ValueSourceUserConfig(GavcClientBaseParamsHandler.TOKEN_PARAM),
+            self._ValueSourceConst(self.DEFAULT_GAVC_SERVER_API_ACCESS_TOKEN),
         ], required=True, hidden=True)
         self._add_parameter(GavcClientBaseParamsHandler.SERVER_PARAM, [
             self._ValueSourceEnv("GAVC_SERVER_URL"),

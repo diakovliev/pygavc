@@ -12,7 +12,7 @@ class Downloader:
 
     def __call__(self, output):
 
-        client = ArtifactoryClient()
+        client = ArtifactoryClient.from_params_handler()
 
         query = Query.parse(self.__target)
 

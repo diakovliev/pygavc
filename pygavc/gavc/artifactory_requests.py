@@ -21,6 +21,13 @@ class ArtifactoryRequests(CachedRequests):
         self.__max_download_attempts = self.DEF_MAX_DOWNLOAD_ATTEMPTS
 
 
+    def get_local_repos(self):
+        r = self.get2(self.client().get_local_repos_request())
+        if r.status_code != self.HTTP_OK:
+            raise self.make_http_error(r.status_code)
+        return r
+
+
     def metadata_for(self, query):
         metadata_url = self.client().repository_url(query.metadata_path())
         r = self.get(metadata_url, self.SOURCE_ORIGIN)

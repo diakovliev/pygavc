@@ -15,7 +15,7 @@ class Installer:
     def __init__(self, install_specs, build_config = None):
         self.__install_specs    = install_specs
         self.__build_config     = build_config
-        self.__client           = ArtifactoryClient()
+        self.__client           = ArtifactoryClient.from_params_handler()
 
 
     def __resolve_version(self, query):

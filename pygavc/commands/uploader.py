@@ -21,7 +21,7 @@ class Uploader:
 
         print(" - Artifact path: %s" % q.artifact_path())
 
-        client = ArtifactoryClient()
+        client = ArtifactoryClient.from_params_handler()
         client.cache().disable()
 
         versions    = []

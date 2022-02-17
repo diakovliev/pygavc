@@ -17,10 +17,27 @@ class UserConfig:
             return UserConfig({})
 
         print(" - Load user config '%s'" % UserConfig.path())
-        with open(UserConfig.path(), 'rb') as f:
+        with open(UserConfig.path(), 'r') as f:
             values = yaml.safe_load(f)
+
+        if values is None:
+            values = {}
 
         return UserConfig(values)
 
+    def store(self):
+        print(" - Store user config '%s'" % UserConfig.path())
+        with open(UserConfig.path(), 'w') as f:
+            yaml.dump(self.__values, f)
+
     def read_value(self, key):
-        return self.__values.get(key, None)
+        return self.get_value(key)
+
+    def set_value(self, key, value):
+        self.__values[key] = value
+
+    def del_value(self, key):
+        del self.__values[key]
+
+    def get_value(self, key, default_value = None):
+        return self.__values.get(key, default_value)

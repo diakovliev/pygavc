@@ -15,7 +15,7 @@ class Requests:
 
     class HttpError(Error):
         def __init__(self, status_code):
-            ArtifactoryRequests.Error.__init__(self)
+            Requests.Error.__init__(self)
             self.__status_code = status_code
 
         def __str__(self):
