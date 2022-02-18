@@ -79,7 +79,7 @@ class Installer:
                                 for archive_file in tqdm.tqdm(
                                         iterable=zip_ref.namelist(),
                                         total=len(zip_ref.namelist()),
-                                        desc="Extract archive '%s'" % os.path.basename(asset.url())):
+                                        desc="Extracting '%s'" % os.path.basename(asset.url())):
                                     zip_ref.extract(member=archive_file, path=destination_dir)
 
 

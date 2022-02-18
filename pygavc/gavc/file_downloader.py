@@ -28,7 +28,7 @@ class FileDownloader:
                 total=total_size_in_bytes,
                 unit='B',
                 unit_scale=True,
-                desc="Download '%s'" % os.path.basename(self.__url)
+                desc="Downloading '%s'" % os.path.basename(self.__url)
             )
 
         with open(self.__destination_file, 'wb') as f:
