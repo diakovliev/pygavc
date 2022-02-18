@@ -50,7 +50,12 @@ class CacheParamsPage(QtWidgets.QWizardPage):
         self.completeChanged.emit()
 
     def on_cache_path_changed(self, cache_path_value):
+        if not cache_path_value:
+            self.__reset_complete()
+
         self.__params_handler.set_param(GavcClientParamsHandler.CACHE_PATH_PARAM, cache_path_value)
+        self.__complete = True
+        self.completeChanged.emit()
 
     def on_select_button_clicked(self):
         current_cache_path      = self.__params_handler.get_param(GavcClientParamsHandler.CACHE_PATH_PARAM)
@@ -167,6 +172,47 @@ class ConnectionParamsPage(QtWidgets.QWizardPage):
             self.__reset_complete("FAILED")
 
 ################################################################################
+class SummaryPage(QtWidgets.QWizardPage):
+    def __init__(self, params_handler):
+        QtWidgets.QWizardPage.__init__(self)
+        self.setTitle("Summary")
+
+        self.__params_handler   = params_handler
+
+        current_cache_path      = self.__params_handler.get_param(GavcClientParamsHandler.CACHE_PATH_PARAM)
+        current_server          = self.__params_handler.get_param(GavcClientBaseParamsHandler.SERVER_PARAM)
+        current_repository      = self.__params_handler.get_param(GavcClientBaseParamsHandler.REPOSITORY_PARAM)
+        current_token           = self.__params_handler.get_param(GavcClientBaseParamsHandler.TOKEN_PARAM)
+
+        layout = QtWidgets.QGridLayout()
+        rowIndex = 0
+
+        self.__add_value_view(layout, rowIndex, "Cache path", current_cache_path)
+        rowIndex += 1
+
+        self.__add_value_view(layout, rowIndex, "Server url", current_server)
+        rowIndex += 1
+
+        self.__add_value_view(layout, rowIndex, "API access token", current_token)
+        rowIndex += 1
+
+        self.__add_value_view(layout, rowIndex, "Repository", current_repository)
+        rowIndex += 1
+
+        self.setLayout(layout)
+
+    def __add_value_view(self, layout, row, title, value):
+        titleLabel = QtWidgets.QLabel()
+        titleLabel.setText(title)
+
+        valueLabel = QtWidgets.QLabel()
+        valueLabel.setText(value)
+
+        layout.addWidget(titleLabel, row, 0)
+        layout.addWidget(valueLabel, row, 1)
+
+
+################################################################################
 class Wizard(QtWidgets.QWizard):
 
     def __init__(self):
@@ -175,11 +221,9 @@ class Wizard(QtWidgets.QWizard):
 
         self.__params_handler = GavcClientParamsHandler()
 
-        self.__cache_params_page        = CacheParamsPage(self.__params_handler)
-        self.__connection_params_page   = ConnectionParamsPage(self.__params_handler)
-
-        self.addPage(self.__cache_params_page)
-        self.addPage(self.__connection_params_page)
+        self.addPage(CacheParamsPage(self.__params_handler))
+        self.addPage(ConnectionParamsPage(self.__params_handler))
+        self.addPage(SummaryPage(self.__params_handler))
 
         self.accepted.connect(self.on_accept)
         self.rejected.connect(self.on_cancel)
