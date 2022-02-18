@@ -1,4 +1,5 @@
 import sys
+import json
 from PyQt5 import QtCore, QtWidgets
 
 from ..gavc.gavc_parameters import GavcClientBaseParamsHandler
@@ -49,6 +50,18 @@ class ConnectionParamsPage(QtWidgets.QWizardPage):
         rowIndex += 1
 
         #####
+        repoLabel = QtWidgets.QLabel()
+        repoLabel.setText("Repository")
+
+        repoEditor = QtWidgets.QLineEdit()
+        repoEditor.setText(self.__repository)
+        repoEditor.textChanged.connect(self.on_repository_changed)
+
+        layout.addWidget(repoLabel, rowIndex, 0)
+        layout.addWidget(repoEditor, rowIndex, 1)
+        rowIndex += 1
+
+        #####
         checkButton = QtWidgets.QPushButton()
         checkButton.setText("Check connection...")
         checkButton.clicked.connect(self.check_connection)
@@ -59,18 +72,6 @@ class ConnectionParamsPage(QtWidgets.QWizardPage):
 
         layout.addWidget(checkButton, rowIndex, 0)
         layout.addWidget(checkLabel, rowIndex, 1)
-        rowIndex += 1
-
-        #####
-        repoLabel = QtWidgets.QLabel()
-        repoLabel.setText("Repository")
-
-        repoEditor = QtWidgets.QLineEdit()
-        repoEditor.setText(self.__repository)
-        repoEditor.textChanged.connect(self.on_repository_changed)
-
-        layout.addWidget(repoLabel, rowIndex, 0)
-        layout.addWidget(repoEditor, rowIndex, 1)
         rowIndex += 1
 
         self.setLayout(layout)
@@ -96,6 +97,10 @@ class ConnectionParamsPage(QtWidgets.QWizardPage):
         client  = ArtifactoryClient(cache, self.__server, self.__repository, self.__token)
         try:
             r = client.requests().get_local_repos()
+            repos_info = json.loads(r.text)
+            repo_info = list(filter(lambda x: x['key'] == self.__repository, repos_info))
+            if len(repo_info) == 0:
+                raise Exception("No requested repository '%s'!" % self.__repository)
             self.checkingComplete.emit("OK")
             self.__complete = True
             self.completeChanged.emit()
