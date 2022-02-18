@@ -19,7 +19,7 @@ class Uploader:
         if q.version() is None or not q.version().is_single_version():
             raise Exception("Gavc target '%s' is not a single version target!" % self.__target)
 
-        print(" - Artifact path: %s" % q.artifact_path())
+        # print(" - Artifact path: %s" % q.artifact_path())
 
         client = ArtifactoryClient.from_params_handler()
         client.cache().disable()
@@ -35,20 +35,20 @@ class Uploader:
 
         q.set_version(versions[0])
 
-        print(" - Version url: %s" % client.repository_url(q.version_path()))
+        # print(" - Version url: %s" % client.repository_url(q.version_path()))
 
         uploads = []
         for upload_spec in self.__uploads:
-            print(" - Parse upload spec: %s" % upload_spec)
+            # print(" - Parse upload spec: %s" % upload_spec)
             uploads.append(UploadFile(client, q, Spec.parse(upload_spec)))
         uploads.append(UploadPom(client, q, q.pom()))
 
         for o2u in uploads:
             url = o2u.url()
-            print(" - Upload: %s" % url)
+            # print(" - Upload: %s" % url)
             client.requests().put2(url, data=o2u.read())
             for summ in o2u.all_summs():
                 url_summ = url + "." + summ
                 summ_value = o2u.get_summ(summ)
-                print(" - Upload %s: %s <= %s" % (summ, url_summ, summ_value))
+                # print(" - Upload %s: %s <= %s" % (summ, url_summ, summ_value))
                 client.requests().put2(url_summ, data=summ_value)

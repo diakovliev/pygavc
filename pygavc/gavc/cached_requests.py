@@ -18,18 +18,18 @@ class CachedRequests(Requests):
 
         cache = self.client().cache().requests()
         if primary_source == self.SOURCE_ORIGIN:
-            print(" - %s '%s' update cache" % (method, request_get))
+            # print(" - %s '%s' update cache" % (method, request_get))
             r = request_get()
             if r.status_code != self.HTTP_OK:
                 if not cache_contains():
                     return r
-                print(" - %s(cached) '%s' use cached result" % (method, cache_get))
+                # print(" - %s(cached) '%s' use cached result" % (method, cache_get))
                 return cache_get()
         elif primary_source == self.SOURCE_CACHE:
             if cache_contains():
-                print(" - %s(cached) '%s' use cached result" % (method, cache_get))
+                # print(" - %s(cached) '%s' use cached result" % (method, cache_get))
                 return cache_get()
-            print(" - %s '%s' update cache" % (method, request_get))
+            # print(" - %s '%s' update cache" % (method, request_get))
             r = request_get()
             if r.status_code != self.HTTP_OK:
                 return r

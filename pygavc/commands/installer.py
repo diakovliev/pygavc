@@ -25,7 +25,7 @@ class Installer:
 
 
     def __call__(self, install_root):
-        print(" - Install into '%s'" % install_root)
+        # print(" - Install into '%s'" % install_root)
 
         for install in self.__install_specs.installs():
 
@@ -33,11 +33,11 @@ class Installer:
             if install.gavc_arg():
                 assert self.__build_config is not None, "Build config is not set!"
                 gavc = self.__build_config.get_arg(install.gavc_arg())
-                print(" -- arg: '%s' gavc: '%s'" % (install.gavc_arg(), gavc))
+                # print(" -- arg: '%s' gavc: '%s'" % (install.gavc_arg(), gavc))
                 # assert gavc is not None, "Gavc got from the build config by arg '%s' is None!" % install.gavc_arg()
             else:
                 gavc = install.gavc()
-                print(" -- gavc: '%s'" % gavc)
+                # print(" -- gavc: '%s'" % gavc)
 
             # assert gavc is not None
             if not gavc:
@@ -47,36 +47,39 @@ class Installer:
             if install.root_prefix_arg():
                 assert self.__build_config is not None, "Build config is not set!"
                 root_prefix = self.__build_config.get_arg(install.root_prefix_arg())
-                print(" -- arg: '%s' root_prefix: '%s'" % (install.root_prefix_arg(), root_prefix))
+                # print(" -- arg: '%s' root_prefix: '%s'" % (install.root_prefix_arg(), root_prefix))
                 assert root_prefix is not None, "Root prefix got from the build config by arg '%s' is None!" % install.root_prefix_arg()
 
             main_query  = Query.parse(gavc)
-            print(" -- Main query: '%s'" % main_query)
-            print(" -- Root dir: '%s'" % install.root_dir())
+            # print(" -- Main query: '%s'" % main_query)
+            # print(" -- Root dir: '%s'" % install.root_dir())
 
             element_install_root = os.path.join(install_root, root_prefix, install.root_dir())
-            print(" -- Element install root: '%s'" % element_install_root)
+            # print(" -- Element install root: '%s'" % element_install_root)
 
             res_version = self.__resolve_version(main_query)
-            print(" -- Resolved version: '%s'" % res_version)
+            # print(" -- Resolved version: '%s'" % res_version)
 
             for spec in install.specs():
 
-                print(" --- Classifier: '%s'" % spec.classifier())
-                print(" --- Destination dir: '%s'" % spec.destination_dir())
+                # print(" --- Classifier: '%s'" % spec.classifier())
+                # print(" --- Destination dir: '%s'" % spec.destination_dir())
 
                 destination_dir = os.path.join(element_install_root, spec.destination_dir())
-                print(" --- Final destination dir: '%s'" % destination_dir)
+                # print(" --- Final destination dir: '%s'" % destination_dir)
 
                 subquery = main_query.make_subquery(version=res_version, classifier=spec.classifier())
 
-                print(" --- Sub query: '%s'" % subquery)
+                # print(" --- Sub query: '%s'" % subquery)
                 for asset in  self.__client.requests().assets_for(subquery):
                     with self.__client.requests().retrieve_asset(asset) as cache_access_wrapper:
                         with FsUtils.directory_lock(FsUtils.ensure_dir(destination_dir)):
-                            print(" --- Extract archive into: '%s'..." % destination_dir)
+                            # print(" --- Extract archive into: '%s'..." % destination_dir)
                             with zipfile.ZipFile(cache_access_wrapper.path(), 'r') as zip_ref:
-                                for archive_file in tqdm.tqdm(iterable=zip_ref.namelist(), total=len(zip_ref.namelist())):
+                                for archive_file in tqdm.tqdm(
+                                        iterable=zip_ref.namelist(),
+                                        total=len(zip_ref.namelist()),
+                                        desc="Extract archive '%s'" % os.path.basename(asset.url())):
                                     zip_ref.extract(member=archive_file, path=destination_dir)
 
 

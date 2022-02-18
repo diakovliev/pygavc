@@ -64,7 +64,7 @@ class UploadObject:
         self._init_checksums()
 
     def _init_progress_bar(self, total_size_in_bytes):
-        self.__progress_bar = tqdm.tqdm(total=total_size_in_bytes, unit='iB', unit_scale=True)
+        self.__progress_bar = tqdm.tqdm(total=total_size_in_bytes, unit='iB', unit_scale=True, desc="Upload object")
 
     def update_progress_bar(self, chunk):
         if self.__progress_bar:

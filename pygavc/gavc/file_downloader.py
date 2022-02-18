@@ -24,7 +24,12 @@ class FileDownloader:
         if self.__enable_progress_bar:
             total_size_in_bytes = int(r.headers.get('content-length', 0))
             block_size          = 1024*1024
-            progress_bar        = tqdm.tqdm(total=total_size_in_bytes, unit='iB', unit_scale=True)
+            progress_bar        = tqdm.tqdm(
+                total=total_size_in_bytes,
+                unit='B',
+                unit_scale=True,
+                desc="Download '%s'" % os.path.basename(self.__url)
+            )
 
         with open(self.__destination_file, 'wb') as f:
             for chunk in r.iter_content(block_size):

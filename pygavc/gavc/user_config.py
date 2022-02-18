@@ -16,7 +16,7 @@ class UserConfig:
         if not os.path.isfile(UserConfig.path()):
             return UserConfig({})
 
-        print(" - Load user config '%s'" % UserConfig.path())
+        # print(" - Load user config '%s'" % UserConfig.path())
         with open(UserConfig.path(), 'r') as f:
             values = yaml.safe_load(f)
 
@@ -26,7 +26,7 @@ class UserConfig:
         return UserConfig(values)
 
     def store(self):
-        print(" - Store user config '%s'" % UserConfig.path())
+        # print(" - Store user config '%s'" % UserConfig.path())
         with open(UserConfig.path(), 'w') as f:
             yaml.dump(self.__values, f)
 
