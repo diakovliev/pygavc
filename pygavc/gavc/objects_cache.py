@@ -5,6 +5,7 @@ import filelock
 import datetime
 import glob
 import yaml
+import hashlib
 
 from .fs_utils import FsUtils
 
@@ -72,6 +73,27 @@ class ObjectsCache:
 
     def contains(self, asset):
         return os.path.isfile(self.asset_path(asset))
+
+    def validate_asset(self, asset, buf_size = 1024 * 1024):
+        asset_checksum      = asset.sha1()
+        object_path         = self.asset_path(asset)
+
+        sha1 = hashlib.sha1()
+
+        with open(object_path, 'rb') as f:
+            while True:
+                data = f.read(buf_size)
+                if not data:
+                    break
+                sha1.update(data)
+
+        object_checksumm = sha1.hexdigest()
+
+        return asset_checksum == object_checksumm
+
+    def remove_asset(self, asset):
+        FsUtils.remove(self.props_path(asset))
+        FsUtils.remove(self.asset_path(asset))
 
     def validate_destination(self, asset, destination_path):
         with self.asset_lock(asset):

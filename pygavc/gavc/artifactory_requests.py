@@ -125,19 +125,25 @@ class ArtifactoryRequests(CachedRequests):
         asset_lock = cache.asset_lock(asset)
         asset_lock.acquire()
 
+        if not cache.validate_asset(asset):
+            cache.remove_asset(asset)
+            asset_lock.release()
+            return None
+
         cache.update_access(asset)
         if destination_file is None:
             # print(" - Return cache object: '%s'" % asset.url())
             return self.CacheAssetAccessWrapper(cache.asset_path(asset), asset_lock)
 
-        asset_lock.release()
-
         if cache.validate_destination(asset, destination_file):
             # print(" - Destination '%s' is actual" % destination_file)
+            asset_lock.release()
             return self.DestinationFileAccessWrapper(destination_file)
 
         # print("Extract cache object '%s' -> '%s'" % (asset.url(), destination_file))
         cache.copy_asset(asset, destination_file)
+        asset_lock.release()
+
         return self.DestinationFileAccessWrapper(destination_file)
 
 
