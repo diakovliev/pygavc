@@ -1,5 +1,5 @@
 ::!/cmd
-@call %~dp0\tools\python_env.bat
+@call %~dp0\..\win_python\python_env.bat
 
 @set PYTHONPATH=%PYTHONPATH%;%~dp0
 

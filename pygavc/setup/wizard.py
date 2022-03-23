@@ -178,39 +178,46 @@ class SummaryPage(QtWidgets.QWizardPage):
         self.setTitle("Summary")
 
         self.__params_handler   = params_handler
+        self.__values_labels    = {}
 
+        self.__layout = QtWidgets.QGridLayout()
+        self.setLayout(self.__layout)
+
+    def initializePage(self):
         current_cache_path      = self.__params_handler.get_param(GavcClientParamsHandler.CACHE_PATH_PARAM)
         current_server          = self.__params_handler.get_param(GavcClientBaseParamsHandler.SERVER_PARAM)
         current_repository      = self.__params_handler.get_param(GavcClientBaseParamsHandler.REPOSITORY_PARAM)
         current_token           = self.__params_handler.get_param(GavcClientBaseParamsHandler.TOKEN_PARAM)
 
-        layout = QtWidgets.QGridLayout()
         rowIndex = 0
 
-        self.__add_value_view(layout, rowIndex, "Cache path", current_cache_path)
+        self.__add_value_view(rowIndex, "Cache path", current_cache_path)
         rowIndex += 1
 
-        self.__add_value_view(layout, rowIndex, "Server url", current_server)
+        self.__add_value_view(rowIndex, "Server url", current_server)
         rowIndex += 1
 
-        self.__add_value_view(layout, rowIndex, "API access token", current_token)
+        self.__add_value_view(rowIndex, "API access token", current_token)
         rowIndex += 1
 
-        self.__add_value_view(layout, rowIndex, "Repository", current_repository)
+        self.__add_value_view(rowIndex, "Repository", current_repository)
         rowIndex += 1
 
-        self.setLayout(layout)
+    def __add_value_view(self, row, title, value):
+        if title in self.__values_labels:
+            self.__values_labels[title].setText(value)
+            return
 
-    def __add_value_view(self, layout, row, title, value):
         titleLabel = QtWidgets.QLabel()
         titleLabel.setText(title)
 
         valueLabel = QtWidgets.QLabel()
         valueLabel.setText(value)
 
-        layout.addWidget(titleLabel, row, 0)
-        layout.addWidget(valueLabel, row, 1)
+        self.__layout.addWidget(titleLabel, row, 0)
+        self.__layout.addWidget(valueLabel, row, 1)
 
+        self.__values_labels[title] = valueLabel
 
 ################################################################################
 class Wizard(QtWidgets.QWizard):
